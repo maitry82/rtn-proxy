@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="dark">
 <title>RTN SMART — Terminal Test</title>
 <style>
   :root {
@@ -21,10 +22,11 @@
   }
 
 - { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #0a0a0f; }
 
 body {
-background: var(–bg);
-color: var(–text);
+background: #0a0a0f;
+color: #f0f0f5;
 font-family: ‘SF Mono’, ‘Fira Code’, monospace;
 font-size: 13px;
 min-height: 100vh;
@@ -39,21 +41,8 @@ padding: 20px 0 24px;
 border-bottom: 1px solid var(–border);
 margin-bottom: 20px;
 }
-
-header h1 {
-font-size: 18px;
-font-weight: 700;
-color: var(–accent);
-letter-spacing: 2px;
-text-transform: uppercase;
-}
-
-header p {
-color: var(–muted);
-font-size: 11px;
-margin-top: 4px;
-letter-spacing: 1px;
-}
+header h1 { font-size: 18px; font-weight: 700; color: var(–accent); letter-spacing: 2px; text-transform: uppercase; }
+header p  { color: var(–muted); font-size: 11px; margin-top: 4px; letter-spacing: 1px; }
 
 .step {
 background: var(–surface);
@@ -62,46 +51,20 @@ border-radius: 10px;
 padding: 16px;
 margin-bottom: 14px;
 }
-
-.step-header {
-display: flex;
-align-items: center;
-gap: 10px;
-margin-bottom: 14px;
-}
-
+.step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .step-num {
-width: 26px;
-height: 26px;
-border-radius: 50%;
-background: var(–accent);
-color: #000;
-font-weight: 800;
-font-size: 12px;
-display: flex;
-align-items: center;
-justify-content: center;
-flex-shrink: 0;
+width: 26px; height: 26px; border-radius: 50%;
+background: var(–accent); color: #000;
+font-weight: 800; font-size: 12px;
+display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-
-.step-title {
-font-size: 12px;
-font-weight: 700;
-color: var(–text);
-letter-spacing: 1px;
-text-transform: uppercase;
-}
+.step-title { font-size: 12px; font-weight: 700; color: var(–text); letter-spacing: 1px; text-transform: uppercase; }
 
 label {
-display: block;
-color: var(–muted);
-font-size: 10px;
-letter-spacing: 1px;
-text-transform: uppercase;
-margin-bottom: 5px;
-margin-top: 10px;
+display: block; color: var(–muted); font-size: 10px;
+letter-spacing: 1px; text-transform: uppercase;
+margin-bottom: 5px; margin-top: 10px;
 }
-
 label:first-of-type { margin-top: 0; }
 
 input, select {
@@ -116,238 +79,135 @@ padding: 10px 12px;
 outline: none;
 transition: border-color 0.2s;
 -webkit-appearance: none;
+appearance: none;
+color-scheme: dark;
 }
-
-input:focus, select:focus {
-border-color: var(–accent);
-}
-
+input:focus, select:focus { border-color: var(–accent); }
 input::placeholder { color: var(–muted); }
-
-.invoice-row {
-display: flex;
-gap: 8px;
-align-items: flex-end;
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+-webkit-text-fill-color: #f0f0f5 !important;
+-webkit-box-shadow: 0 0 0px 1000px #1c1c27 inset !important;
 }
 
-.invoice-row input { flex: 1; }
-
-.btn-regen {
-background: var(–surface2);
-border: 1px solid var(–border);
-border-radius: 7px;
-color: var(–muted);
-font-size: 16px;
-padding: 10px 12px;
-cursor: pointer;
-flex-shrink: 0;
+select {
+background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘12’ height=‘8’%3E%3Cpath d=‘M1 1l5 5 5-5’ stroke=’%236b6b80’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”);
+background-repeat: no-repeat;
+background-position: right 12px center;
+padding-right: 32px;
 }
+select option { background: #1c1c27; color: #f0f0f5; }
 
-.btn-main {
-width: 100%;
-background: var(–accent);
-border: none;
-border-radius: 10px;
-color: #000;
-font-family: ‘SF Mono’, ‘Fira Code’, monospace;
-font-size: 14px;
-font-weight: 800;
-letter-spacing: 2px;
-padding: 16px;
-cursor: pointer;
-text-transform: uppercase;
-margin-top: 8px;
-transition: opacity 0.2s, transform 0.1s;
--webkit-appearance: none;
-}
-
-.btn-main:active { transform: scale(0.98); opacity: 0.9; }
-.btn-main:disabled { opacity: 0.4; }
-
-.btn-main.loading {
-background: var(–surface2);
-color: var(–accent);
-border: 1px solid var(–accent);
-}
-
-/* TIP MODE PILLS */
-.tip-pills {
-display: flex;
-gap: 8px;
-flex-wrap: wrap;
-}
-
-.tip-pill {
-flex: 1;
-min-width: 80px;
-background: var(–surface2);
-border: 1px solid var(–border);
-border-radius: 7px;
-color: var(–muted);
-font-family: ‘SF Mono’, ‘Fira Code’, monospace;
-font-size: 11px;
-padding: 8px 6px;
-cursor: pointer;
-text-align: center;
-transition: all 0.15s;
--webkit-appearance: none;
-}
-
-.tip-pill.active {
-background: #001a12;
-border-color: var(–accent);
-color: var(–accent);
-font-weight: 700;
-}
-
-/* DEBUG PANEL */
-#debug-panel {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 10px;
-margin-top: 20px;
+/* Gateway warning banner */
+.gateway-warn {
 display: none;
-}
-
-#debug-panel.visible { display: block; }
-
-.debug-header {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 12px 16px;
-border-bottom: 1px solid var(–border);
-cursor: pointer;
-}
-
-.debug-title {
-font-size: 11px;
-font-weight: 700;
-letter-spacing: 1.5px;
-text-transform: uppercase;
-color: var(–accent2);
-}
-
-.debug-toggle { color: var(–muted); font-size: 11px; }
-
-.debug-body { padding: 0; }
-
-.debug-section {
-border-bottom: 1px solid var(–border);
-padding: 12px 16px;
-}
-
-.debug-section:last-child { border-bottom: none; }
-
-.debug-section-title {
-font-size: 10px;
-font-weight: 700;
-letter-spacing: 1.5px;
-text-transform: uppercase;
-margin-bottom: 8px;
-}
-
-.debug-section-title.pre { color: #888; }
-.debug-section-title.req { color: var(–accent2); }
-.debug-section-title.res { color: var(–accent); }
-.debug-section-title.diag { color: var(–warn); }
-.debug-section-title.raw { color: var(–muted); }
-
-.debug-kv {
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-gap: 8px;
-margin-bottom: 4px;
-font-size: 11px;
-}
-
-.debug-k { color: var(–muted); flex-shrink: 0; }
-.debug-v { color: var(–text); text-align: right; word-break: break-all; }
-.debug-v.ok { color: var(–success); font-weight: 700; }
-.debug-v.err { color: var(–danger); font-weight: 700; }
-.debug-v.warn { color: var(–warn); }
-
-.diagnosis-box {
 background: #1a0e00;
 border: 1px solid var(–warn);
 border-radius: 7px;
-padding: 10px 12px;
-font-size: 11px;
-line-height: 1.6;
+padding: 8px 12px;
+font-size: 10px;
 color: #ffcc80;
+margin-top: 8px;
+line-height: 1.5;
 }
+.gateway-warn.visible { display: block; }
 
-.diagnosis-box.success-box {
-background: #001a0e;
-border-color: var(–success);
-color: #80ffc8;
-}
-
-.raw-pre {
+/* Timeout progress bar */
+.timeout-bar-wrap {
+display: none;
+margin-top: 10px;
 background: var(–surface2);
 border: 1px solid var(–border);
 border-radius: 7px;
-padding: 10px;
-font-size: 10px;
-color: var(–muted);
-overflow-x: auto;
-white-space: pre-wrap;
-word-break: break-all;
-max-height: 200px;
-overflow-y: auto;
-line-height: 1.5;
+overflow: hidden;
+height: 6px;
 }
-
-.btn-copy {
-background: var(–surface2);
-border: 1px solid var(–border);
-border-radius: 6px;
-color: var(–muted);
-font-family: ‘SF Mono’, ‘Fira Code’, monospace;
+.timeout-bar-wrap.visible { display: block; }
+.timeout-bar {
+height: 100%;
+background: var(–accent);
+width: 100%;
+transition: width 1s linear, background 1s;
+}
+.timeout-label {
+display: none;
 font-size: 10px;
-padding: 5px 10px;
-cursor: pointer;
-margin-top: 8px;
+color: var(–muted);
+text-align: center;
+margin-top: 5px;
 letter-spacing: 0.5px;
 }
+.timeout-label.visible { display: block; }
 
+.invoice-row { display: flex; gap: 8px; align-items: flex-end; }
+.invoice-row input { flex: 1; }
+
+.btn-regen {
+background: var(–surface2); border: 1px solid var(–border);
+border-radius: 7px; color: var(–muted);
+font-size: 16px; padding: 10px 12px; cursor: pointer; flex-shrink: 0;
+}
+
+.btn-main {
+width: 100%; background: var(–accent); border: none;
+border-radius: 10px; color: #000;
+font-family: ‘SF Mono’, ‘Fira Code’, monospace;
+font-size: 14px; font-weight: 800; letter-spacing: 2px;
+padding: 16px; cursor: pointer; text-transform: uppercase;
+margin-top: 8px; transition: opacity 0.2s, transform 0.1s;
+-webkit-appearance: none;
+}
+.btn-main:active { transform: scale(0.98); opacity: 0.9; }
+.btn-main:disabled { opacity: 0.4; }
+.btn-main.loading { background: var(–surface2); color: var(–accent); border: 1px solid var(–accent); }
+.btn-main.timeout-state { background: var(–surface2); color: var(–warn); border: 1px solid var(–warn); }
+
+.tip-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.tip-pill {
+flex: 1; min-width: 80px;
+background: var(–surface2); border: 1px solid var(–border);
+border-radius: 7px; color: var(–muted);
+font-family: ‘SF Mono’, ‘Fira Code’, monospace;
+font-size: 11px; padding: 8px 6px; cursor: pointer;
+text-align: center; transition: all 0.15s; -webkit-appearance: none;
+}
+.tip-pill.active { background: #001a12; border-color: var(–accent); color: var(–accent); font-weight: 700; }
+
+#debug-panel { background: var(–surface); border: 1px solid var(–border); border-radius: 10px; margin-top: 20px; display: none; }
+#debug-panel.visible { display: block; }
+.debug-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(–border); cursor: pointer; }
+.debug-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(–accent2); }
+.debug-toggle { color: var(–muted); font-size: 11px; }
+
+.debug-section { border-bottom: 1px solid var(–border); padding: 12px 16px; }
+.debug-section:last-child { border-bottom: none; }
+.debug-section-title { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.debug-section-title.pre  { color: #888; }
+.debug-section-title.req  { color: var(–accent2); }
+.debug-section-title.res  { color: var(–accent); }
+.debug-section-title.diag { color: var(–warn); }
+.debug-section-title.raw  { color: var(–muted); }
+
+.debug-kv { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 4px; font-size: 11px; }
+.debug-k { color: var(–muted); flex-shrink: 0; }
+.debug-v { color: var(–text); text-align: right; word-break: break-all; }
+.debug-v.ok   { color: var(–success); font-weight: 700; }
+.debug-v.err  { color: var(–danger);  font-weight: 700; }
+.debug-v.warn { color: var(–warn); }
+
+.diagnosis-box { background: #1a0e00; border: 1px solid var(–warn); border-radius: 7px; padding: 10px 12px; font-size: 11px; line-height: 1.6; color: #ffcc80; }
+.diagnosis-box.success-box { background: #001a0e; border-color: var(–success); color: #80ffc8; }
+
+.raw-pre { background: var(–surface2); border: 1px solid var(–border); border-radius: 7px; padding: 10px; font-size: 10px; color: var(–muted); overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; line-height: 1.5; }
+
+.btn-copy { background: var(–surface2); border: 1px solid var(–border); border-radius: 6px; color: var(–muted); font-family: ‘SF Mono’, ‘Fira Code’, monospace; font-size: 10px; padding: 5px 10px; cursor: pointer; margin-top: 8px; letter-spacing: 0.5px; }
 .btn-copy.copied { color: var(–accent); border-color: var(–accent); }
 
-.status-badge {
-display: inline-block;
-padding: 2px 8px;
-border-radius: 4px;
-font-size: 10px;
-font-weight: 700;
-letter-spacing: 1px;
-}
-
-.badge-ok { background: #001a0e; color: var(–success); border: 1px solid var(–success); }
-.badge-err { background: #1a0000; color: var(–danger); border: 1px solid var(–danger); }
-.badge-warn { background: #1a0e00; color: var(–warn); border: 1px solid var(–warn); }
-
-.spinner {
-display: inline-block;
-width: 12px;
-height: 12px;
-border: 2px solid var(–border);
-border-top-color: var(–accent);
-border-radius: 50%;
-animation: spin 0.7s linear infinite;
-vertical-align: middle;
-margin-right: 6px;
-}
-
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(–border); border-top-color: var(–accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-footer {
-text-align: center;
-padding: 20px 0;
-color: var(–muted);
-font-size: 10px;
-letter-spacing: 0.5px;
-}
+footer { text-align: center; padding: 20px 0; color: var(–muted); font-size: 10px; letter-spacing: 0.5px; }
 </style>
 
 </head>
@@ -361,68 +221,65 @@ letter-spacing: 0.5px;
 <!-- STEP 1: CREDENTIALS -->
 
 <div class="step">
-  <div class="step-header">
-    <div class="step-num">1</div>
-    <div class="step-title">Credentials</div>
-  </div>
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Credentials</div></div>
   <label>Gateway</label>
   <select id="gateway" onchange="updateGateway()">
     <option value="https://gateway-int.clearent.net">INT / Test</option>
-    <option value="https://gateway-sb.clearent.net">Sandbox</option>
+    <option value="https://gateway-sb.clearent.net" selected>Sandbox</option>
     <option value="https://gateway.clearent.net">Production</option>
     <option value="http://localhost:5050">Localhost (CORS proxy)</option>
+    <option value="https://rtn-proxy.onrender.com">Render Proxy ⚠️ WAF blocked</option>
     <option value="custom">Custom URL…</option>
   </select>
-  <div id="custom-url-row" style="display:none; margin-top:8px;">
+  <div id="gateway-warn" class="gateway-warn">
+    ⚠️ Render proxy is blocked by Imperva WAF for API calls. Use <strong>Localhost</strong> with <code>python3 rtn_proxy.py</code> on home network instead.
+  </div>
+  <div id="custom-url-row" style="display:none;margin-top:8px;">
     <input type="url" id="custom-url" placeholder="https://..." />
   </div>
   <label>Access Key</label>
-  <input type="text" id="access-key" placeholder="Your Xplor AccessKey" autocomplete="off" />
+  <input type="text" id="access-key" value="9e16eb7e04954bae8532d8cbdc77417b" autocomplete="off" />
   <label>Merchant ID</label>
-  <input type="text" id="merchant-id" placeholder="Your MerchantId" autocomplete="off" />
+  <input type="text" id="merchant-id" value="6588000002772499" autocomplete="off" />
 </div>
 
 <!-- STEP 2: TERMINAL -->
 
 <div class="step">
-  <div class="step-header">
-    <div class="step-num">2</div>
-    <div class="step-title">Terminal</div>
-  </div>
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Terminal</div></div>
   <label>Terminal Alias</label>
   <input type="text" id="terminal-alias" value="FC1" autocomplete="off" />
   <label>Tip Mode</label>
   <div class="tip-pills">
-    <button class="tip-pill active" onclick="setTip('on_terminal', this)">On Terminal</button>
-    <button class="tip-pill" onclick="setTip('no_tip', this)">No Tip</button>
-    <button class="tip-pill" onclick="setTip('on_receipt', this)">On Receipt</button>
+    <button class="tip-pill active" onclick="setTip('on_terminal',this)">On Terminal</button>
+    <button class="tip-pill" onclick="setTip('no_tip',this)">No Tip</button>
+    <button class="tip-pill" onclick="setTip('on_receipt',this)">On Receipt</button>
   </div>
 </div>
 
 <!-- STEP 3: AMOUNT -->
 
 <div class="step">
-  <div class="step-header">
-    <div class="step-num">3</div>
-    <div class="step-title">Amount</div>
-  </div>
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Amount</div></div>
   <label>Amount (USD) — min $1.00 in test</label>
   <input type="number" id="amount" value="1.00" min="0.01" step="0.01" />
   <label>Invoice Number</label>
   <div class="invoice-row">
     <input type="text" id="invoice" readonly />
-    <button class="btn-regen" onclick="genInvoice()" title="Regenerate">↺</button>
+    <button class="btn-regen" onclick="genInvoice()">↺</button>
   </div>
 </div>
 
 <!-- STEP 4: SEND -->
 
 <div class="step">
-  <div class="step-header">
-    <div class="step-num">4</div>
-    <div class="step-title">Send</div>
-  </div>
+  <div class="step-header"><div class="step-num">4</div><div class="step-title">Send</div></div>
   <button class="btn-main" id="btn-send" onclick="sendSale()">⚡ WAKE TERMINAL</button>
+  <!-- Timeout progress bar -->
+  <div class="timeout-bar-wrap" id="timeout-bar-wrap">
+    <div class="timeout-bar" id="timeout-bar"></div>
+  </div>
+  <div class="timeout-label" id="timeout-label">Waiting for card tap… 90s</div>
 </div>
 
 <!-- DEBUG PANEL -->
@@ -432,36 +289,16 @@ letter-spacing: 0.5px;
     <div class="debug-title">🔍 Debug Report</div>
     <div class="debug-toggle" id="debug-toggle">▼ OPEN</div>
   </div>
-  <div class="debug-body" id="debug-body">
-
-```
-<div class="debug-section">
-  <div class="debug-section-title pre">① Pre-flight</div>
-  <div id="dbg-preflight"></div>
-</div>
-
-<div class="debug-section">
-  <div class="debug-section-title req">② Request</div>
-  <div id="dbg-request"></div>
-</div>
-
-<div class="debug-section">
-  <div class="debug-section-title res">③ Response</div>
-  <div id="dbg-response"></div>
-</div>
-
-<div class="debug-section">
-  <div class="debug-section-title diag">④ Diagnosis</div>
-  <div id="dbg-diagnosis"></div>
-</div>
-
-<div class="debug-section">
-  <div class="debug-section-title raw">⑤ Raw Payload</div>
-  <pre class="raw-pre" id="dbg-raw">—</pre>
-  <button class="btn-copy" id="btn-copy" onclick="copyRaw()">COPY RAW</button>
-</div>
-```
-
+  <div id="debug-body">
+    <div class="debug-section"><div class="debug-section-title pre">① Pre-flight</div><div id="dbg-preflight"></div></div>
+    <div class="debug-section"><div class="debug-section-title req">② Request</div><div id="dbg-request"></div></div>
+    <div class="debug-section"><div class="debug-section-title res">③ Response</div><div id="dbg-response"></div></div>
+    <div class="debug-section"><div class="debug-section-title diag">④ Diagnosis</div><div id="dbg-diagnosis"></div></div>
+    <div class="debug-section">
+      <div class="debug-section-title raw">⑤ Raw Payload</div>
+      <pre class="raw-pre" id="dbg-raw">—</pre>
+      <button class="btn-copy" id="btn-copy" onclick="copyRaw()">COPY RAW</button>
+    </div>
   </div>
 </div>
 
@@ -470,15 +307,15 @@ letter-spacing: 0.5px;
 <script>
   let tipMode = 'on_terminal';
   let debugOpen = true;
+  let timeoutTimer = null;
+  let countdownTimer = null;
+  const TIMEOUT_MS = 90000; // 90 seconds
 
-  // ─── Init ────────────────────────────────────────────
   genInvoice();
 
   function genInvoice() {
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-    document.getElementById('invoice').value = `RTN${ts}`;
+    const now = new Date(), pad = n => String(n).padStart(2,'0');
+    document.getElementById('invoice').value = `RTN${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
   }
 
   function setTip(mode, el) {
@@ -488,14 +325,15 @@ letter-spacing: 0.5px;
   }
 
   function updateGateway() {
-    const val = document.getElementById('gateway').value;
-    document.getElementById('custom-url-row').style.display = val === 'custom' ? 'block' : 'none';
+    const v = document.getElementById('gateway').value;
+    document.getElementById('custom-url-row').style.display = v === 'custom' ? 'block' : 'none';
+    const warn = document.getElementById('gateway-warn');
+    warn.classList.toggle('visible', v === 'https://rtn-proxy.onrender.com');
   }
 
   function getGatewayUrl() {
-    const sel = document.getElementById('gateway').value;
-    if (sel === 'custom') return document.getElementById('custom-url').value.trim();
-    return sel;
+    const v = document.getElementById('gateway').value;
+    return v === 'custom' ? document.getElementById('custom-url').value.trim() : v;
   }
 
   function toggleDebug() {
@@ -504,192 +342,193 @@ letter-spacing: 0.5px;
     document.getElementById('debug-toggle').textContent = debugOpen ? '▲ CLOSE' : '▼ OPEN';
   }
 
-  // ─── KV helper ───────────────────────────────────────
   function kv(k, v, cls='') {
     return `<div class="debug-kv"><span class="debug-k">${k}</span><span class="debug-v ${cls}">${v}</span></div>`;
   }
 
-  // ─── DIAGNOSIS ───────────────────────────────────────
-  function diagnose(httpStatus, code, message) {
-    const diags = {
-      '000': { ok: true,  msg: '✅ Payment approved! Card charged successfully.' },
-      '001': { ok: false, msg: '❌ Terminal communication error.\n1. Check PAX A80 is powered on\n2. Check LAN cable is connected\n3. Verify terminal alias matches Xplor dashboard exactly\n4. Confirm Clearent idle screen is showing (not Android home)\n5. Wait 30 sec and retry' },
-      '018': { ok: false, msg: '❌ Invalid card security code.\n→ Use sandbox test card: 4111111111111111\n→ Any future expiry date\n→ Any 3-digit CVV' },
-      '073': { ok: false, msg: '❌ System error — credentials likely wrong.\n1. Double-check AccessKey (copy from Xplor dashboard)\n2. Double-check MerchantId\n3. Make sure you are on the correct gateway (INT vs Sandbox vs Prod)' },
-      '401': { ok: false, msg: '❌ Unauthorized.\n→ Wrong AccessKey or MerchantId\n→ Re-copy both from Xplor Pay dashboard' },
-      '402': { ok: false, msg: '❌ Declined.\n→ In test/INT mode, amount must be ≥ $1.00\n→ Current amount may be too low' },
-      '404': { ok: false, msg: '❌ Not found.\n→ Wrong gateway URL or API path\n→ Check the selected gateway matches your account type' },
-      '500': { ok: false, msg: '❌ Xplor server error.\n→ Retry in 2-3 minutes\n→ Check https://status.xplorpay.com' },
-      'CORS': { ok: false, msg: '❌ CORS blocked by browser.\n1. Run: python3 rtn_proxy.py\n2. Switch gateway to "Localhost (CORS proxy)"\n3. Retry' },
-      'NETWORK': { ok: false, msg: '❌ Network error — could not reach gateway.\n1. Check your internet connection\n2. If on desktop, try running rtn_proxy.py for CORS\n3. Check gateway URL is correct' },
-    };
-
-    if (httpStatus === 401) return diags['401'];
-    if (httpStatus === 404) return diags['404'];
-    if (httpStatus === 500) return diags['500'];
-    if (code && diags[code]) return diags[code];
-    if (message && message.toLowerCase().includes('cors')) return diags['CORS'];
-    if (httpStatus === 0) return diags['NETWORK'];
-    return { ok: false, msg: `Unknown result code: ${code}\nHTTP status: ${httpStatus}\nMessage: ${message}` };
+  // ── Timeout bar ──────────────────────────────────────
+  function startTimeoutBar() {
+    const bar   = document.getElementById('timeout-bar');
+    const wrap  = document.getElementById('timeout-bar-wrap');
+    const label = document.getElementById('timeout-label');
+    wrap.classList.add('visible');
+    label.classList.add('visible');
+    bar.style.width = '100%';
+    bar.style.background = 'var(--accent)';
+    let remaining = TIMEOUT_MS / 1000;
+    countdownTimer = setInterval(() => {
+      remaining--;
+      const pct = (remaining / (TIMEOUT_MS/1000)) * 100;
+      bar.style.width = pct + '%';
+      label.textContent = `Waiting for card tap… ${remaining}s`;
+      if (remaining <= 15) bar.style.background = 'var(--warn)';
+      if (remaining <= 5)  bar.style.background = 'var(--danger)';
+      if (remaining <= 0)  clearInterval(countdownTimer);
+    }, 1000);
   }
 
-  // ─── MAIN SEND ───────────────────────────────────────
-  async function sendSale() {
-    const btn = document.getElementById('btn-send');
-    const panel = document.getElementById('debug-panel');
+  function stopTimeoutBar() {
+    clearInterval(countdownTimer);
+    clearTimeout(timeoutTimer);
+    document.getElementById('timeout-bar-wrap').classList.remove('visible');
+    document.getElementById('timeout-label').classList.remove('visible');
+    document.getElementById('timeout-bar').style.width = '100%';
+    document.getElementById('timeout-bar').style.background = 'var(--accent)';
+  }
 
-    // Collect inputs
-    const gateway   = getGatewayUrl();
-    const accessKey = document.getElementById('access-key').value.trim();
-    const merchantId= document.getElementById('merchant-id').value.trim();
-    const alias     = document.getElementById('terminal-alias').value.trim();
-    const amount    = parseFloat(document.getElementById('amount').value).toFixed(2);
-    const invoice   = document.getElementById('invoice').value.trim();
+  // ── Diagnose ─────────────────────────────────────────
+  function diagnose(httpStatus, code, message, timedOut) {
+    if (timedOut) return { ok:false, msg:'⏱️ Request timed out after 90 seconds.\n1. Check PAX A80 is powered on and showing Clearent idle screen\n2. Check LAN/WiFi connection on terminal\n3. Verify terminal alias FC1 is registered in Xplor dashboard\n4. Try again — terminal may need a moment to reconnect' };
+    const d = {
+      '000':     { ok:true,  msg:'✅ Payment approved! Card charged successfully.' },
+      '001':     { ok:false, msg:'❌ Terminal communication error.\n1. Check PAX A80 is powered on\n2. Check LAN cable connected\n3. Verify alias FC1 in Xplor dashboard\n4. Clearent idle screen must be showing\n5. Wait 30s and retry' },
+      '018':     { ok:false, msg:'❌ Invalid card code.\n→ Test card: 4111111111111111\n→ Any future expiry, CVV: 999' },
+      '073':     { ok:false, msg:'❌ System error.\n→ Check AccessKey and MerchantId\n→ Confirm correct gateway' },
+      '401':     { ok:false, msg:'❌ Unauthorized.\n→ Wrong AccessKey or MerchantId' },
+      '402':     { ok:false, msg:'❌ Declined.\n→ Amount must be ≥ $1.00 in test' },
+      '404':     { ok:false, msg:'❌ Not found.\n→ Wrong gateway URL' },
+      '500':     { ok:false, msg:'❌ Xplor server error.\n→ Retry in 2-3 minutes' },
+      'CORS':    { ok:false, msg:'❌ CORS blocked.\n→ Run python3 rtn_proxy.py\n→ Switch gateway to Localhost' },
+      'NETWORK': { ok:false, msg:'❌ Network error.\n→ Check internet connection\n→ Gateway may be blocked by Imperva WAF\n→ Use home network + python3 rtn_proxy.py\n→ Switch gateway to Localhost' },
+    };
+    if (httpStatus===401) return d['401'];
+    if (httpStatus===404) return d['404'];
+    if (httpStatus>=500)  return d['500'];
+    if (code && d[code])  return d[code];
+    if (message?.toLowerCase().includes('cors')) return d['CORS'];
+    if (httpStatus===0)   return d['NETWORK'];
+    return { ok:false, msg:`Unknown: code=${code} http=${httpStatus}\n${message}` };
+  }
+
+  // ── Main send ─────────────────────────────────────────
+  async function sendSale() {
+    const btn   = document.getElementById('btn-send');
+    const panel = document.getElementById('debug-panel');
+    const gateway    = getGatewayUrl();
+    const accessKey  = document.getElementById('access-key').value.trim();
+    const merchantId = document.getElementById('merchant-id').value.trim();
+    const alias      = document.getElementById('terminal-alias').value.trim();
+    const amount     = parseFloat(document.getElementById('amount').value).toFixed(2);
+    const invoice    = document.getElementById('invoice').value.trim();
 
     // ① PRE-FLIGHT
-    const preChecks = [];
-    let preOk = true;
-    const chk = (label, ok, fix) => {
-      preChecks.push({ label, ok, fix });
-      if (!ok) preOk = false;
-    };
-    chk('Gateway URL',    !!gateway,    'Select a gateway or enter custom URL');
-    chk('Access Key',     !!accessKey,  'Enter your Xplor AccessKey');
-    chk('Merchant ID',    !!merchantId, 'Enter your MerchantId');
-    chk('Terminal Alias', !!alias,      'Enter terminal alias (e.g. FC1)');
-    chk('Amount ≥ $1.00', parseFloat(amount) >= 1.00, 'Amount must be at least $1.00 in test mode');
-    chk('Invoice',        !!invoice,    'Invoice cannot be empty');
+    const checks = []; let preOk = true;
+    const chk = (l,ok,fix) => { checks.push({l,ok,fix}); if(!ok) preOk=false; };
+    chk('Gateway URL',    !!gateway,              'Select a gateway');
+    chk('Access Key',     !!accessKey,            'Enter AccessKey');
+    chk('Merchant ID',    !!merchantId,           'Enter MerchantId');
+    chk('Terminal Alias', !!alias,                'Enter terminal alias');
+    chk('Amount ≥ $1.00', parseFloat(amount)>=1.0,'Amount must be ≥ $1.00');
+    chk('Invoice',        !!invoice,              'Invoice cannot be empty');
 
-    let preHtml = '';
-    for (const c of preChecks) {
-      preHtml += kv(c.label,
-        c.ok ? '✅ OK' : `❌ ${c.fix}`,
-        c.ok ? 'ok' : 'err');
-    }
-    document.getElementById('dbg-preflight').innerHTML = preHtml;
+    document.getElementById('dbg-preflight').innerHTML =
+      checks.map(c => kv(c.l, c.ok?'✅ OK':`❌ ${c.fix}`, c.ok?'ok':'err')).join('');
+
+    panel.classList.add('visible');
+    debugOpen = true;
+    document.getElementById('debug-body').style.display = 'block';
+    document.getElementById('debug-toggle').textContent = '▲ CLOSE';
 
     if (!preOk) {
-      panel.classList.add('visible');
-      debugOpen = true;
-      document.getElementById('debug-body').style.display = 'block';
-      document.getElementById('dbg-request').innerHTML = kv('Status', 'Blocked — fix pre-flight errors above', 'err');
-      document.getElementById('dbg-response').innerHTML = kv('Status', 'Not sent', 'warn');
+      document.getElementById('dbg-request').innerHTML   = kv('Status','Blocked — fix errors above','err');
+      document.getElementById('dbg-response').innerHTML  = kv('Status','Not sent','warn');
       document.getElementById('dbg-diagnosis').innerHTML = '<div class="diagnosis-box">Fix the pre-flight errors above before sending.</div>';
-      document.getElementById('dbg-raw').textContent = 'Request not sent.';
+      document.getElementById('dbg-raw').textContent     = 'Request not sent.';
       return;
     }
 
     // ② REQUEST
     const endpoint = `${gateway}/rest/v2/terminal/transactions/sale`;
-    const body = {
-      amount: amount,
-      'invoice-number': invoice,
-      'terminal-alias': alias,
-      'tip-mode': tipMode,
-      currency: 'USD'
-    };
-    const headers = {
-      'Content-Type': 'application/json',
-      'AccessKey': accessKey,
-      'MerchantId': merchantId
-    };
-
-    const t0 = Date.now();
+    const body     = { amount, 'invoice-number':invoice, 'terminal-alias':alias, 'tip-mode':tipMode, currency:'USD' };
+    const headers  = { 'Content-Type':'application/json', 'AccessKey':accessKey, 'MerchantId':merchantId };
 
     document.getElementById('dbg-request').innerHTML =
-      kv('Method', 'POST') +
-      kv('Endpoint', endpoint) +
-      kv('AccessKey', accessKey.substring(0,6) + '••••••') +
+      kv('Method','POST') + kv('Endpoint',endpoint) +
+      kv('AccessKey', accessKey.substring(0,6)+'••••••') +
       kv('MerchantId', merchantId) +
+      kv('Timeout', '90 seconds') +
       kv('Body', JSON.stringify(body));
 
-    // Show loading state
     btn.disabled = true;
     btn.classList.add('loading');
     btn.innerHTML = '<span class="spinner"></span>WAITING FOR CARD…';
-    panel.classList.add('visible');
 
-    // ③ FETCH
-    let httpStatus = 0, resultCode = '', resultMsg = '', rawText = '';
+    // Start timeout bar
+    startTimeoutBar();
+
+    const t0 = Date.now();
+    let httpStatus=0, resultCode='', resultMsg='', rawText='', timedOut=false;
+
+    // AbortController for 90s timeout
+    const controller = new AbortController();
+    timeoutTimer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, TIMEOUT_MS);
+
     try {
       const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(body)
+        method:'POST', headers, body:JSON.stringify(body),
+        signal: controller.signal
       });
+      clearTimeout(timeoutTimer);
+      stopTimeoutBar();
       httpStatus = resp.status;
-      rawText = await resp.text();
-      const timing = Date.now() - t0;
-
-      let json = null;
-      try { json = JSON.parse(rawText); } catch(e) {}
-
-      resultCode = json?.['result-code'] || json?.['payload']?.['result-code'] || '';
-      resultMsg  = json?.['result-message'] || json?.['payload']?.['result-message'] || rawText.substring(0,80);
-
-      // Response section
+      rawText    = await resp.text();
+      const timing = Date.now()-t0;
+      let json=null; try{json=JSON.parse(rawText);}catch(e){}
+      resultCode = json?.['result-code']    || json?.payload?.['result-code']    || '';
+      resultMsg  = json?.['result-message'] || json?.payload?.['result-message'] || rawText.substring(0,80);
       document.getElementById('dbg-response').innerHTML =
-        kv('HTTP Status', httpStatus, httpStatus === 200 ? 'ok' : 'err') +
+        kv('HTTP Status', httpStatus, httpStatus===200?'ok':'err') +
         kv('Timing', `${timing}ms`) +
-        kv('Result Code', resultCode || '—', resultCode === '000' ? 'ok' : 'err') +
+        kv('Result Code', resultCode||'—', resultCode==='000'?'ok':'err') +
         kv('Result Message', resultMsg) +
-        (json?.['transaction-id'] ? kv('Transaction ID', json['transaction-id'], 'ok') : '') +
-        (json?.['auth-code']      ? kv('Auth Code',      json['auth-code'],      'ok') : '') +
-        (json?.['last-four']      ? kv('Last Four',      json['last-four']            ) : '') +
-        (json?.['card-type']      ? kv('Card Type',      json['card-type']            ) : '');
-
+        (json?.['transaction-id'] ? kv('Transaction ID',json['transaction-id'],'ok') : '') +
+        (json?.['auth-code']      ? kv('Auth Code',     json['auth-code'],     'ok') : '') +
+        (json?.['last-four']      ? kv('Last Four',     json['last-four']          ) : '') +
+        (json?.['card-type']      ? kv('Card Type',     json['card-type']          ) : '');
     } catch(err) {
-      const timing = Date.now() - t0;
-      rawText = err.toString();
-      resultCode = 'NETWORK';
+      stopTimeoutBar();
+      rawText    = err.toString();
       resultMsg  = err.message;
       httpStatus = 0;
-
-      document.getElementById('dbg-response').innerHTML =
-        kv('HTTP Status', 'N/A — Network Error', 'err') +
-        kv('Timing', `${timing}ms`) +
-        kv('Error', err.message, 'err');
+      if (timedOut) {
+        resultCode = 'TIMEOUT';
+        document.getElementById('dbg-response').innerHTML =
+          kv('HTTP Status','N/A — Timed Out','err') +
+          kv('Timing','90,000ms (timeout)','warn') +
+          kv('Error','Request aborted after 90s — no response from terminal','err');
+      } else {
+        resultCode = 'NETWORK';
+        document.getElementById('dbg-response').innerHTML =
+          kv('HTTP Status','N/A — Network Error','err') +
+          kv('Timing',`${Date.now()-t0}ms`) +
+          kv('Error',err.message,'err');
+      }
     }
 
     // ④ DIAGNOSIS
-    const d = diagnose(httpStatus, resultCode, resultMsg);
-    const diagBox = `<div class="diagnosis-box ${d.ok ? 'success-box' : ''}">${d.msg.replace(/\n/g, '<br>')}</div>`;
-    document.getElementById('dbg-diagnosis').innerHTML = diagBox;
+    const d = diagnose(httpStatus, resultCode, resultMsg, timedOut);
+    document.getElementById('dbg-diagnosis').innerHTML =
+      `<div class="diagnosis-box ${d.ok?'success-box':''}">${d.msg.replace(/\n/g,'<br>')}</div>`;
 
     // ⑤ RAW
-    try {
-      document.getElementById('dbg-raw').textContent = JSON.stringify(JSON.parse(rawText), null, 2);
-    } catch(e) {
-      document.getElementById('dbg-raw').textContent = rawText || '(empty response)';
-    }
+    try { document.getElementById('dbg-raw').textContent = JSON.stringify(JSON.parse(rawText),null,2); }
+    catch(e) { document.getElementById('dbg-raw').textContent = rawText||'(empty — request timed out)'; }
 
-    // Reset button
     btn.disabled = false;
     btn.classList.remove('loading');
+    btn.classList.remove('timeout-state');
     btn.innerHTML = d.ok ? '✅ APPROVED — SEND ANOTHER' : '⚡ RETRY';
-
-    // Auto-open on failure
-    if (!d.ok) {
-      debugOpen = true;
-      document.getElementById('debug-body').style.display = 'block';
-      document.getElementById('debug-toggle').textContent = '▲ CLOSE';
-    }
-
-    // Regenerate invoice for next run
     if (d.ok) genInvoice();
   }
 
-  // ─── COPY RAW ────────────────────────────────────────
   function copyRaw() {
-    const text = document.getElementById('dbg-raw').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('btn-copy');
-      btn.textContent = '✅ COPIED';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = 'COPY RAW';
-        btn.classList.remove('copied');
-      }, 2000);
+    navigator.clipboard.writeText(document.getElementById('dbg-raw').textContent).then(() => {
+      const b = document.getElementById('btn-copy');
+      b.textContent='✅ COPIED'; b.classList.add('copied');
+      setTimeout(()=>{ b.textContent='COPY RAW'; b.classList.remove('copied'); },2000);
     });
   }
 </script>
