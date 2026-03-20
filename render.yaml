@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: rtn-proxy
+    env: python
+    buildCommand: "pip install -r requirements.txt || true"
+    startCommand: "python rtn_proxy_render.py"
+    plan: free
+    envVars:
+      - key: PORT
+        value: 10000
