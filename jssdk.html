@@ -7,612 +7,347 @@
 <meta name="color-scheme" content="dark">
 <title>RTN SMART — Mobile Payment</title>
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --surface2: #1c1c27;
-    --border: #2a2a3d;
-    --accent: #00e5a0;
-    --accent2: #0088ff;
-    --warn: #ff9500;
-    --danger: #ff3b30;
-    --text: #f0f0f5;
-    --muted: #6b6b80;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { background: #0a0a0f; }
-  body {
-    background: #0a0a0f;
-    color: #f0f0f5;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 13px;
-    min-height: 100vh;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 16px;
-  }
-
-header { text-align: center; padding: 20px 0 24px; border-bottom: 1px solid var(–border); margin-bottom: 20px; }
-header h1 { font-size: 18px; font-weight: 700; color: var(–accent); letter-spacing: 2px; text-transform: uppercase; }
-header p { color: var(–muted); font-size: 11px; margin-top: 4px; letter-spacing: 1px; }
-
-.step { background: var(–surface); border: 1px solid var(–border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
-.step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.step-num { width: 26px; height: 26px; border-radius: 50%; background: var(–accent); color: #000; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.step-title { font-size: 12px; font-weight: 700; color: var(–text); letter-spacing: 1px; text-transform: uppercase; }
-
-label { display: block; color: var(–muted); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; margin-top: 12px; }
-label:first-of-type { margin-top: 0; }
-
-input {
-width: 100%; background: var(–surface2); border: 1px solid var(–border);
-border-radius: 7px; color: var(–text);
-font-family: ‘SF Mono’, ‘Fira Code’, monospace;
-font-size: 14px; padding: 12px 14px; outline: none;
-transition: border-color 0.2s; -webkit-appearance: none;
-color-scheme: dark; letter-spacing: 1px;
-}
-input:focus { border-color: var(–accent); box-shadow: 0 0 0 2px rgba(0,229,160,0.1); }
-input::placeholder { color: var(–muted); letter-spacing: 0; }
-
-/* card row */
-.card-row { display: flex; gap: 10px; }
-.card-row input { flex: 1; }
-
-/* test card chips */
-.test-cards { margin-bottom: 14px; }
-.tc-label { color: var(–muted); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-.tc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.tc-chip {
-background: var(–surface2); border: 1px solid var(–border);
-border-radius: 6px; padding: 6px 10px; font-size: 10px;
-color: var(–accent); cursor: pointer; transition: all 0.15s;
-letter-spacing: 0.5px;
-}
-.tc-chip:active { background: #001a0e; border-color: var(–accent); }
-
-.btn-main {
-width: 100%; background: var(–accent); border: none;
-border-radius: 10px; color: #000;
-font-family: ‘SF Mono’, ‘Fira Code’, monospace;
-font-size: 14px; font-weight: 800; letter-spacing: 2px;
-padding: 16px; cursor: pointer; text-transform: uppercase;
-margin-top: 12px; transition: all 0.2s; -webkit-appearance: none;
-}
-.btn-main:active:not(:disabled) { transform: scale(0.98); }
-.btn-main:disabled { opacity: 0.3; cursor: not-allowed; }
-.btn-main.loading { background: var(–surface2); color: var(–accent); border: 1px solid var(–accent); }
-.btn-main.done { background: #001a0e; color: var(–accent); border: 1px solid var(–accent); }
-.btn-main.approved { background: var(–accent); color: #000; }
-
-.result-box {
-display: none; border-radius: 8px; padding: 12px 14px;
-font-size: 11px; line-height: 1.8; margin-top: 10px;
-}
-.result-box.visible { display: block; }
-.result-box.ok  { background: #001a0e; border: 1px solid var(–accent); color: #80ffc8; }
-.result-box.err { background: #1a0000; border: 1px solid var(–danger); color: #ff9999; }
-.result-box.warn { background: #1a0e00; border: 1px solid var(–warn); color: #ffcc80; }
-.result-box strong { font-size: 13px; }
-
-/* Live log */
-.log-wrap { background: var(–surface2); border: 1px solid var(–border); border-radius: 7px; padding: 10px; max-height: 180px; overflow-y: auto; font-size: 10px; line-height: 1.9; }
-.ll { display: flex; gap: 6px; align-items: flex-start; }
-.lt { color: var(–muted); flex-shrink: 0; font-size: 9px; padding-top: 1px; }
-.lk { flex-shrink: 0; font-weight: 700; min-width: 34px; text-align: center; border-radius: 3px; padding: 0 3px; font-size: 9px; }
-.lok { background: #001a0e; color: var(–accent); }
-.ler { background: #1a0000; color: var(–danger); }
-.lin { background: #001a2a; color: var(–accent2); }
-.ldb { background: #1a1a00; color: #ffcc00; }
-.lm { color: var(–text); word-break: break-all; }
-
-/* Debug panel */
-#debug-panel { background: var(–surface); border: 1px solid var(–border); border-radius: 10px; margin-top: 16px; display: none; }
-#debug-panel.visible { display: block; }
-.dbg-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(–border); cursor: pointer; }
-.dbg-left { display: flex; align-items: center; gap: 8px; }
-.dbg-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(–accent2); }
-.dbg-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
-.b-ok   { background: #001a0e; color: var(–accent); border: 1px solid var(–accent); }
-.b-fail { background: #1a0000; color: var(–danger); border: 1px solid var(–danger); }
-.dbg-tog { color: var(–muted); font-size: 11px; }
-
-.ds { border-bottom: 1px solid var(–border); padding: 12px 16px; }
-.ds:last-child { border-bottom: none; }
-.dst { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
-.c1{color:var(–accent2);} .c2{color:var(–accent);} .c3{color:var(–warn);} .c4{color:var(–muted);}
-
-.dkv { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; font-size: 11px; }
-.dk { color: var(–muted); flex-shrink: 0; }
-.dv { color: var(–text); text-align: right; word-break: break-all; }
-.dv.ok  { color: var(–accent); font-weight: 700; }
-.dv.err { color: var(–danger); font-weight: 700; }
-.dv.warn{ color: var(–warn); }
-
-.diag-box { border-radius: 7px; padding: 10px 12px; font-size: 11px; line-height: 1.7; }
-.diag-ok   { background: #001a0e; border: 1px solid var(–accent); color: #80ffc8; }
-.diag-fail { background: #1a0e00; border: 1px solid var(–warn); color: #ffcc80; }
-.diag-err  { background: #1a0000; border: 1px solid var(–danger); color: #ff9999; }
-
-.raw-pre { background: var(–surface2); border: 1px solid var(–border); border-radius: 7px; padding: 10px; font-size: 10px; color: var(–muted); white-space: pre-wrap; word-break: break-all; max-height: 220px; overflow-y: auto; line-height: 1.5; }
-.btn-copy { background: var(–surface2); border: 1px solid var(–border); border-radius: 6px; color: var(–muted); font-family: monospace; font-size: 10px; padding: 5px 10px; cursor: pointer; margin-top: 8px; }
-.btn-copy.copied { color: var(–accent); border-color: var(–accent); }
-
-.spinner { display: inline-block; width: 11px; height: 11px; border: 2px solid var(–border); border-top-color: var(–accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 5px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Step connector line */
-.step-done { border-color: var(–accent); }
-.step-done .step-num { background: var(–accent); }
-
-footer { text-align: center; padding: 24px 0 16px; color: var(–muted); font-size: 10px; letter-spacing: 0.5px; }
+:root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c27;--border:#2a2a3d;--accent:#00e5a0;--accent2:#0088ff;--warn:#ff9500;--danger:#ff3b30;--text:#f0f0f5;--muted:#6b6b80}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0a0a0f}
+body{color:#f0f0f5;font-family:'SF Mono','Fira Code',monospace;font-size:13px;min-height:100vh;max-width:480px;margin:0 auto;padding:16px}
+header{text-align:center;padding:20px 0 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
+header h1{font-size:18px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
+header p{color:var(--muted);font-size:11px;margin-top:4px;letter-spacing:1px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#000;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st{font-size:12px;font-weight:700;color:var(--text);letter-spacing:1px;text-transform:uppercase}
+/* SDK status */
+.sdk-status{font-size:10px;padding:7px 12px;border-radius:6px;margin-bottom:10px;text-align:center;letter-spacing:0.5px}
+.s-load{background:#1a1a00;color:#ffcc00;border:1px solid #ffcc00}
+.s-ok{background:#001a0e;color:var(--accent);border:1px solid var(--accent)}
+.s-err{background:#1a0000;color:var(--danger);border:1px solid var(--danger)}
+/* Card iframe */
+#card-frame{background:#fff;border-radius:7px;min-height:190px;border:2px solid var(--border);overflow:hidden;transition:border-color 0.3s}
+#card-frame.ready{border-color:var(--accent)}
+/* Test card hint */
+.test-hint{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:10px;color:var(--muted);margin-top:10px;line-height:2}
+.test-hint span{color:var(--accent);font-weight:700;cursor:pointer}
+/* Amount display */
+.amount-display{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:14px;text-align:center;margin-bottom:4px}
+.amount-big{font-size:32px;font-weight:800;color:var(--accent);letter-spacing:2px}
+.amount-sub{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:1px}
+/* Buttons */
+.btn{width:100%;border:none;border-radius:10px;font-family:'SF Mono','Fira Code',monospace;font-size:14px;font-weight:800;letter-spacing:2px;padding:16px;cursor:pointer;text-transform:uppercase;margin-top:10px;transition:all 0.2s;-webkit-appearance:none}
+.btn:disabled{opacity:0.3;cursor:not-allowed}
+.btn:active:not(:disabled){transform:scale(0.98)}
+.btn-green{background:var(--accent);color:#000}
+.btn-outline{background:var(--surface2);color:var(--accent);border:1px solid var(--accent)}
+.btn-approved{background:var(--accent);color:#000}
+/* Token box */
+.token-box{display:none;background:#001a0e;border:1px solid var(--accent);border-radius:7px;padding:10px 12px;font-size:10px;color:var(--accent);margin-top:10px;line-height:1.7;word-break:break-all}
+.token-box.v{display:block}
+/* Result */
+.result{display:none;border-radius:8px;padding:14px;font-size:12px;line-height:1.9;margin-top:10px;text-align:center}
+.result.v{display:block}
+.result.ok{background:#001a0e;border:1px solid var(--accent);color:#80ffc8}
+.result.fail{background:#1a0000;border:1px solid var(--danger);color:#ff9999}
+/* Log */
+.log-box{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px;max-height:160px;overflow-y:auto;font-size:10px;line-height:1.9}
+.ll{display:flex;gap:6px}.lt{color:var(--muted);flex-shrink:0;font-size:9px;padding-top:1px}
+.lk{flex-shrink:0;font-weight:700;min-width:34px;text-align:center;border-radius:3px;padding:0 3px;font-size:9px}
+.lok{background:#001a0e;color:var(--accent)}.ler{background:#1a0000;color:var(--danger)}
+.lin{background:#001a2a;color:var(--accent2)}.ldb{background:#1a1a00;color:#ffcc00}
+.lm{color:var(--text);word-break:break-all}
+/* Debug */
+#dp{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-top:16px;display:none}
+#dp.v{display:block}
+.dh{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.dt{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)}
+.db2{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px}
+.bok{background:#001a0e;color:var(--accent);border:1px solid var(--accent)}
+.bfl{background:#1a0000;color:var(--danger);border:1px solid var(--danger)}
+.dtog{color:var(--muted);font-size:11px}
+.ds{border-bottom:1px solid var(--border);padding:12px 16px}.ds:last-child{border-bottom:none}
+.dst{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.c1{color:var(--accent2)}.c2{color:var(--accent)}.c3{color:var(--warn)}.c4{color:var(--muted)}
+.dkv{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;font-size:11px}
+.dk{color:var(--muted);flex-shrink:0}.dv{color:var(--text);text-align:right;word-break:break-all}
+.dv.ok{color:var(--accent);font-weight:700}.dv.err{color:var(--danger);font-weight:700}
+.diag{border-radius:7px;padding:10px 12px;font-size:11px;line-height:1.7}
+.diag.ok{background:#001a0e;border:1px solid var(--accent);color:#80ffc8}
+.diag.fail{background:#1a0e00;border:1px solid var(--warn);color:#ffcc80}
+.raw-pre{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px;font-size:10px;color:var(--muted);white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;line-height:1.5}
+.bcopy{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:monospace;font-size:10px;padding:5px 10px;cursor:pointer;margin-top:8px}
+.bcopy.copied{color:var(--accent);border-color:var(--accent)}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;padding:20px 0;color:var(--muted);font-size:10px}
 </style>
-
 </head>
 <body>
 
 <header>
   <h1>RTN SMART</h1>
-  <p>MOBILE PAYMENT · SHOP N SAVE DEV · NO IFRAME</p>
+  <p>JS SDK · MOBILE PAYMENT · SHOP N SAVE DEV</p>
 </header>
 
-<!-- STEP 1: CARD DETAILS -->
+<!-- STEP 1: CARD -->
 
-<div class="step" id="step1">
-  <div class="step-header">
-    <div class="step-num">1</div>
-    <div class="step-title">Card Details</div>
+<div class="step">
+  <div class="sh"><div class="sn">1</div><div class="st">Enter Card</div></div>
+  <div id="sdk-status" class="sdk-status s-load">⏳ Loading Clearent SDK…</div>
+  <!-- Clearent iframe injects here -->
+  <div id="card-frame"><div id="payment-form"></div></div>
+  <div class="test-hint">
+    💳 TEST CARD (tap to copy)<br>
+    Visa: <span onclick="copy('4111111111111111')">4111 1111 1111 1111 📋</span><br>
+    Exp: <span>Any future MM/YY</span> &nbsp; CVV: <span>999</span> &nbsp; ZIP: <span>85284</span>
   </div>
-
-  <!-- Test card quick-fill chips -->
-
-  <div class="test-cards">
-    <div class="tc-label">💳 Quick Fill — tap to auto-fill</div>
-    <div class="tc-chips">
-      <div class="tc-chip" onclick="fillCard('4111111111111111','12/29','999','85284')">Visa 4111…1111</div>
-      <div class="tc-chip" onclick="fillCard('5431111111111111','12/29','999','85284')">MC 5431…1111</div>
-    </div>
-  </div>
-
-<label>Card Number</label>
-<input type="tel" id="card-number" placeholder="4111 1111 1111 1111" maxlength="19" oninput="formatCard(this)" />
-
-  <div class="card-row">
-    <div style="flex:1">
-      <label>Expiry (MM/YY)</label>
-      <input type="tel" id="card-exp" placeholder="12/29" maxlength="5" oninput="formatExp(this)" />
-    </div>
-    <div style="flex:1">
-      <label>CVV</label>
-      <input type="tel" id="card-cvv" placeholder="999" maxlength="4" />
-    </div>
-  </div>
-
-<label>ZIP Code</label>
-<input type="tel" id="card-zip" placeholder="85284" maxlength="5" />
-
-<button class="btn-main" id="btn-token" onclick="getToken()">🔒 TOKENIZE CARD</button>
-
-  <div class="result-box" id="token-result"></div>
+  <button class="btn btn-green" id="btn-token" onclick="getToken()" disabled>🔒 GET TOKEN</button>
+  <div class="token-box" id="token-box"></div>
 </div>
 
-<!-- STEP 2: AMOUNT -->
+<!-- STEP 2: AMOUNT (pre-filled $1.00) -->
 
-<div class="step" id="step2">
-  <div class="step-header">
-    <div class="step-num">2</div>
-    <div class="step-title">Amount</div>
+<div class="step">
+  <div class="sh"><div class="sn">2</div><div class="st">Amount</div></div>
+  <div class="amount-display">
+    <div class="amount-big">$1.00</div>
+    <div class="amount-sub">SANDBOX TEST CHARGE · MIN $1.00</div>
   </div>
-  <label>Amount USD — min $1.00 in sandbox</label>
-  <input type="number" id="amount" value="1.00" min="1.00" step="0.01" oninput="updateChargeBtn()" />
 </div>
 
 <!-- STEP 3: CHARGE -->
 
-<div class="step" id="step3">
-  <div class="step-header">
-    <div class="step-num">3</div>
-    <div class="step-title">Charge</div>
-  </div>
-  <button class="btn-main" id="btn-charge" onclick="chargeCard()" disabled>⚡ CHARGE $1.00</button>
-  <div class="result-box" id="charge-result"></div>
+<div class="step">
+  <div class="sh"><div class="sn">3</div><div class="st">Charge</div></div>
+  <button class="btn btn-green" id="btn-charge" onclick="charge()" disabled>⚡ CHARGE $1.00</button>
+  <div class="result" id="charge-result"></div>
 </div>
 
 <!-- LIVE LOG -->
 
 <div class="step">
-  <div class="step-header">
-    <div class="step-num" style="background:var(--accent2);color:#fff;font-size:10px;">LOG</div>
-    <div class="step-title">Live Log</div>
+  <div class="sh">
+    <div class="sn" style="background:var(--accent2);color:#fff;font-size:9px">LOG</div>
+    <div class="st">Live Log</div>
   </div>
-  <div class="log-wrap" id="log-box"></div>
+  <div class="log-box" id="log-box"></div>
 </div>
 
 <!-- DEBUG PANEL -->
 
-<div id="debug-panel">
-  <div class="dbg-hdr" onclick="toggleDebug()">
-    <div class="dbg-left">
-      <span class="dbg-title">🔍 Debug Report</span>
-      <span class="dbg-badge" id="dbg-badge"></span>
+<div id="dp">
+  <div class="dh" onclick="toggleDbg()">
+    <div style="display:flex;align-items:center">
+      <span class="dt">🔍 Debug Report</span>
+      <span class="db2" id="dbadge"></span>
     </div>
-    <span class="dbg-tog" id="dbg-tog">▼ OPEN</span>
+    <span class="dtog" id="dtog">▼ OPEN</span>
   </div>
-  <div id="dbg-body">
-    <div class="ds"><div class="dst c1">① Tokenization</div><div id="d1"></div></div>
+  <div id="dbody">
+    <div class="ds"><div class="dst c1">① Token Response</div><div id="d1"></div></div>
     <div class="ds"><div class="dst c2">② Charge Request</div><div id="d2"></div></div>
     <div class="ds"><div class="dst c3">③ Charge Response</div><div id="d3"></div></div>
     <div class="ds"><div class="dst c3">④ Diagnosis</div><div id="d4"></div></div>
     <div class="ds">
       <div class="dst c4">⑤ Raw Payload</div>
       <pre class="raw-pre" id="d5">—</pre>
-      <button class="btn-copy" id="btn-copy" onclick="copyRaw()">COPY RAW</button>
+      <button class="bcopy" id="bcopy" onclick="copyRaw()">COPY RAW</button>
     </div>
   </div>
 </div>
 
-<footer>RTN SMART Debug Standard v1.0 · Direct Tokenization · No Iframe</footer>
+<footer>RTN SMART Debug Standard v1.0 · JS SDK Iframe · Home WiFi Required</footer>
 
 <script>
-  const GATEWAY    = 'https://gateway-sb.clearent.net';
-  const ACCESS_KEY = '9e16eb7e04954bae8532d8cbdc77417b';
-  const PUBLIC_KEY = '307a301406072a8648ce3d020106092b240303020801010c03620044b3b059f574e567b9a9df877536a2240415193b6e1924b85aee93c170e836cff44904ad92b3bcfce3a5a6357db241bb7384ca253130420a6048889ab272a38844dac5ff099f2ecc91e4335d8eaa4c1e46f1165707f7c782ed1f3290088da3b75';
+var GW = 'https://gateway-sb.clearent.net';
+var AK = '9e16eb7e04954bae8532d8cbdc77417b';
+var PK = '307a301406072a8648ce3d020106092b240303020801010c03620044b3b059f574e567b9a9df877536a2240415193b6e1924b85aee93c170e836cff44904ad92b3bcfce3a5a6357db241bb7384ca253130420a6048889ab272a38844dac5ff099f2ecc91e4335d8eaa4c1e46f1165707f7c782ed1f3290088da3b75';
+var jwt = null, dbOpen = true;
 
-  let jwtToken = null;
-  let dbgOpen  = true;
-  let lastRaw  = '';
+function log(tag,msg,type){
+  var b=document.getElementById('log-box');
+  var t=new Date().toTimeString().slice(0,8);
+  var c={ok:'lok',err:'ler',info:'lin',dbg:'ldb'}[type]||'lin';
+  var d=document.createElement('div');
+  d.className='ll';
+  d.innerHTML='<span class="lt">'+t+'</span><span class="lk '+c+'">'+tag+'</span><span class="lm">'+msg+'</span>';
+  b.appendChild(d);b.scrollTop=b.scrollHeight;
+}
+function kv(k,v,c){return '<div class="dkv"><span class="dk">'+k+'</span><span class="dv '+(c||'')+'">'+v+'</span></div>';}
+function badge(t,ok){var b=document.getElementById('dbadge');b.textContent=t;b.className='db2 '+(ok?'bok':'bfl');}
+function showDbg(){document.getElementById('dp').classList.add('v');dbOpen=true;document.getElementById('dbody').style.display='block';document.getElementById('dtog').textContent='▲ CLOSE';}
+function toggleDbg(){dbOpen=!dbOpen;document.getElementById('dbody').style.display=dbOpen?'block':'none';document.getElementById('dtog').textContent=dbOpen?'▲ CLOSE':'▼ OPEN';}
+function copyRaw(){navigator.clipboard.writeText(document.getElementById('d5').textContent).then(function(){var b=document.getElementById('bcopy');b.textContent='✅ COPIED';b.classList.add('copied');setTimeout(function(){b.textContent='COPY RAW';b.classList.remove('copied');},2000);});}
+function copy(txt){navigator.clipboard.writeText(txt).catch(function(){});}
 
-  // ── LOG ──────────────────────────────────────────────
-  function log(tag, msg, type='info') {
-    const box = document.getElementById('log-box');
-    const t   = new Date().toTimeString().slice(0,8);
-    const cls = {ok:'lok',err:'ler',info:'lin',dbg:'ldb'}[type]||'lin';
-    const d   = document.createElement('div');
-    d.className = 'll';
-    d.innerHTML = `<span class="lt">${t}</span><span class="lk ${cls}">${tag}</span><span class="lm">${msg}</span>`;
-    box.appendChild(d);
-    box.scrollTop = box.scrollHeight;
-  }
+function loadSDK(){
+  log('INFO','Loading Clearent JS SDK...','info');
+  var s=document.createElement('script');
+  s.src=GW+'/js-sdk/js/clearent-host.js';
+  s.onload=function(){
+    log('OK','SDK loaded ✅','ok');
+    setTimeout(function(){
+      try{
+        ClearentSDK.init({baseUrl:GW,pk:PK,enableLogging:false});
+        log('OK','SDK initialized ✅','ok');
+        log('INFO','Enter test card in white form above','info');
+        document.getElementById('sdk-status').className='sdk-status s-ok';
+        document.getElementById('sdk-status').textContent='✅ SDK Ready — Enter card in white box above';
+        document.getElementById('card-frame').classList.add('ready');
+        document.getElementById('btn-token').disabled=false;
+      }catch(e){
+        log('ERR','SDK init: '+e.message,'err');
+        document.getElementById('sdk-status').className='sdk-status s-err';
+        document.getElementById('sdk-status').textContent='❌ SDK failed: '+e.message;
+      }
+    },500);
+  };
+  s.onerror=function(){
+    log('ERR','SDK failed to load — check home WiFi','err');
+    document.getElementById('sdk-status').className='sdk-status s-err';
+    document.getElementById('sdk-status').textContent='❌ SDK load failed — must be on home WiFi';
+  };
+  document.head.appendChild(s);
+}
 
-  function kv(k,v,cls='') {
-    return `<div class="dkv"><span class="dk">${k}</span><span class="dv ${cls}">${v}</span></div>`;
-  }
-
-  function badge(txt, ok) {
-    const b = document.getElementById('dbg-badge');
-    b.textContent = txt;
-    b.className = 'dbg-badge '+(ok?'b-ok':'b-fail');
-  }
-
-  function showDebug() {
-    document.getElementById('debug-panel').classList.add('visible');
-    dbgOpen = true;
-    document.getElementById('dbg-body').style.display = 'block';
-    document.getElementById('dbg-tog').textContent = '▲ CLOSE';
-  }
-
-  function toggleDebug() {
-    dbgOpen = !dbgOpen;
-    document.getElementById('dbg-body').style.display = dbgOpen?'block':'none';
-    document.getElementById('dbg-tog').textContent = dbgOpen?'▲ CLOSE':'▼ OPEN';
-  }
-
-  function copyRaw() {
-    navigator.clipboard.writeText(document.getElementById('d5').textContent).then(()=>{
-      const b = document.getElementById('btn-copy');
-      b.textContent='✅ COPIED'; b.classList.add('copied');
-      setTimeout(()=>{b.textContent='COPY RAW';b.classList.remove('copied');},2000);
-    });
-  }
-
-  function updateChargeBtn() {
-    const v = parseFloat(document.getElementById('amount').value||1).toFixed(2);
-    const b = document.getElementById('btn-charge');
-    if(!b.disabled) b.innerHTML = `⚡ CHARGE $${v}`;
-  }
-
-  // ── FORMAT HELPERS ───────────────────────────────────
-  function formatCard(el) {
-    let v = el.value.replace(/\D/g,'').substring(0,16);
-    el.value = v.replace(/(.{4})/g,'$1 ').trim();
-  }
-
-  function formatExp(el) {
-    let v = el.value.replace(/\D/g,'');
-    if(v.length>=2) v = v.substring(0,2)+'/'+v.substring(2,4);
-    el.value = v;
-  }
-
-  function fillCard(num, exp, cvv, zip) {
-    const n = num.replace(/(.{4})/g,'$1 ').trim();
-    document.getElementById('card-number').value = n;
-    document.getElementById('card-exp').value    = exp;
-    document.getElementById('card-cvv').value    = cvv;
-    document.getElementById('card-zip').value    = zip;
-    log('INFO','Test card filled: '+num.substring(0,4)+'••••••••'+num.slice(-4),'info');
-  }
-
-  // ── TOKENIZE ─────────────────────────────────────────
-  async function getToken() {
-    const cardRaw = document.getElementById('card-number').value.replace(/\s/g,'');
-    const expRaw  = document.getElementById('card-exp').value.trim();
-    const cvv     = document.getElementById('card-cvv').value.trim();
-    const zip     = document.getElementById('card-zip').value.trim();
-
-    // Validate
-    if(cardRaw.length < 13) { showErr('token-result','Card number too short'); return; }
-    if(!expRaw.includes('/')) { showErr('token-result','Expiry format: MM/YY'); return; }
-    if(!cvv) { showErr('token-result','CVV required'); return; }
-
-    const [mm, yy] = expRaw.split('/');
-    const expFormatted = mm.padStart(2,'0') + yy.padStart(2,'0'); // MMYY
-
-    const btn = document.getElementById('btn-token');
-    btn.classList.add('loading');
-    btn.innerHTML = '<span class="spinner"></span>TOKENIZING…';
-    btn.disabled = true;
-
-    log('INFO','Starting tokenization...','info');
-    log('INFO','Card: '+cardRaw.substring(0,4)+'••••••••'+cardRaw.slice(-4),'info');
-
-    const tokenEndpoint = GATEWAY + '/rest/v2/tokens';
-    const tokenBody = {
-      'card-number': cardRaw,
-      'exp-date':    expFormatted,
-      'cvv':         cvv,
-      'zip':         zip || undefined
-    };
-
-    const t0 = Date.now();
-    let status = 0, raw = '';
-
-    try {
-      const resp = await fetch(tokenEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'api-key': ACCESS_KEY
-        },
-        body: JSON.stringify(tokenBody)
-      });
-      status = resp.status;
-      raw    = await resp.text();
-      const ms = Date.now()-t0;
-
-      let json = null;
-      try { json = JSON.parse(raw); } catch(e) {}
-
-      const token = json?.payload?.['mobile-jwt'] || json?.payload?.token || json?.token || '';
-      const last4 = json?.payload?.['last-four']  || json?.payload?.card?.['last-four-digits'] || cardRaw.slice(-4);
-      const rc    = json?.payload?.['result-code'] || json?.code || '';
-
-      log('DBG', 'Token response: HTTP '+status+' in '+ms+'ms', 'dbg');
-
-      // Debug ①
-      document.getElementById('d1').innerHTML =
-        kv('Endpoint', tokenEndpoint) +
-        kv('HTTP Status', status, status===200?'ok':'err') +
-        kv('Timing', ms+'ms') +
-        kv('Card (masked)', cardRaw.substring(0,4)+'••••••••'+cardRaw.slice(-4)) +
-        kv('Exp', expFormatted) +
-        kv('Result Code', rc||'—') +
-        kv('Token', token ? token.substring(0,40)+'...' : '—', token?'ok':'err') +
-        kv('Last Four', last4||'—', last4?'ok':'');
-
-      // Try mobile-jwt first, then fall back to checking response structure
-      if(token) {
-        jwtToken = token;
-        log('OK','Token received ✅ Last4: '+last4,'ok');
-        showOk('token-result','🔑 TOKEN OK\nCard: ••••'+last4+'\nToken: '+token.substring(0,30)+'...');
-        badge('TOKEN OK', true);
-        const cb = document.getElementById('btn-charge');
-        cb.disabled = false;
-        cb.classList.add('done');
-        updateChargeBtn();
-        btn.classList.remove('loading');
-        btn.classList.add('done');
-        btn.innerHTML = '✅ TOKENIZED — READY TO CHARGE';
-        showDebug();
-
-      } else if(status === 200 && json) {
-        // Some sandbox responses return token differently
-        // Try to find any jwt-like string in the response
-        const rawStr = JSON.stringify(json);
-        const jwtMatch = rawStr.match(/eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]*/);
-        if(jwtMatch) {
-          jwtToken = jwtMatch[0];
-          log('OK','JWT extracted from response ✅ Last4: '+last4,'ok');
-          showOk('token-result','🔑 TOKEN OK\nCard: ••••'+last4);
-          badge('TOKEN OK', true);
-          const cb = document.getElementById('btn-charge');
-          cb.disabled = false;
-          cb.classList.add('done');
-          updateChargeBtn();
-          btn.classList.remove('loading');
-          btn.classList.add('done');
-          btn.innerHTML = '✅ TOKENIZED — READY TO CHARGE';
-          showDebug();
-        } else {
-          const errMsg = json?.payload?.error?.['error-message'] || json?.status || 'No token in response';
-          log('ERR','Tokenization failed: '+errMsg,'err');
-          showErr('token-result','❌ '+errMsg+'\n\nRaw: '+raw.substring(0,100));
-          badge('TOKEN FAIL', false);
-          btn.classList.remove('loading');
-          btn.innerHTML = '🔒 RETRY TOKENIZE';
-          btn.disabled = false;
-          showDebug();
+function getToken(){
+  var btn=document.getElementById('btn-token');
+  btn.className='btn btn-outline';
+  btn.innerHTML='<span class="spinner"></span>GETTING TOKEN…';
+  btn.disabled=true;
+  log('INFO','Requesting JWT from Clearent SDK...','info');
+  try{
+    ClearentSDK.getPaymentToken(function(raw){
+      try{
+        var resp=JSON.parse(raw);
+        var pl=resp.payload||{};
+        var j=pl['mobile-jwt']||pl['jwt']||'';
+        var l4=(pl.card&&pl.card['last-four-digits'])||pl['last-four']||'????';
+        var rc=String(resp.code||'');
+        if(j&&(rc==='200'||rc===200)){
+          jwt=j;
+          log('OK','✅ TOKEN OK! Last4: '+l4,'ok');
+          log('DBG','JWT: '+j.substring(0,40)+'...','dbg');
+          log('INFO','👆 Now tap CHARGE $1.00!','info');
+          var tb=document.getElementById('token-box');
+          tb.innerHTML='🔑 TOKEN OK · Last 4: <strong>'+l4+'</strong>';
+          tb.classList.add('v');
+          document.getElementById('d1').innerHTML=
+            kv('Status','✅ Token received','ok')+
+            kv('Last Four',l4,'ok')+
+            kv('JWT',j.substring(0,40)+'...');
+          var cb=document.getElementById('btn-charge');
+          cb.disabled=false;
+          cb.className='btn btn-green';
+          btn.innerHTML='✅ TOKEN OK — TAP CHARGE NOW!';
+          btn.className='btn btn-outline';
+          badge('TOKEN OK',true);showDbg();
+        }else{
+          var em=(pl.error&&pl.error['error-message'])||JSON.stringify(pl).substring(0,80);
+          log('ERR','Token failed: '+em,'err');
+          document.getElementById('d1').innerHTML=kv('Error',em,'err');
+          badge('TOKEN FAIL',false);showDbg();
+          btn.innerHTML='🔒 RETRY GET TOKEN';
+          btn.className='btn btn-green';
+          btn.disabled=false;
         }
-      } else {
-        const errMsg = json?.payload?.error?.['error-message'] || 'HTTP '+status;
-        log('ERR','Token failed: '+errMsg,'err');
-        showErr('token-result','❌ '+errMsg);
-        badge('TOKEN FAIL', false);
-        btn.classList.remove('loading');
-        btn.innerHTML = '🔒 RETRY TOKENIZE';
-        btn.disabled = false;
-        showDebug();
+      }catch(e){
+        log('ERR','Parse: '+e.message,'err');
+        btn.innerHTML='🔒 RETRY GET TOKEN';
+        btn.className='btn btn-green';
+        btn.disabled=false;
       }
-
-      // Store raw for debug
-      lastRaw = raw;
-      try { document.getElementById('d5').textContent = JSON.stringify(JSON.parse(raw),null,2); }
-      catch(e) { document.getElementById('d5').textContent = raw; }
-
-    } catch(err) {
-      log('ERR','Network error: '+err.message,'err');
-      showErr('token-result','❌ Network error: '+err.message+'\n→ Must be on home WiFi (residential IP)\n→ Imperva WAF blocks datacenter/cloud IPs');
-      badge('NETWORK ERR', false);
-      document.getElementById('d5').textContent = err.toString();
-      btn.classList.remove('loading');
-      btn.innerHTML = '🔒 RETRY TOKENIZE';
-      btn.disabled = false;
-      showDebug();
-    }
+    });
+  }catch(e){
+    log('ERR','SDK error: '+e.message,'err');
+    btn.innerHTML='🔒 RETRY GET TOKEN';
+    btn.className='btn btn-green';
+    btn.disabled=false;
   }
+}
 
-  // ── CHARGE ───────────────────────────────────────────
-  async function chargeCard() {
-    if(!jwtToken) { log('ERR','No token — tokenize first','err'); return; }
-
-    const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
-    const btn    = document.getElementById('btn-charge');
-    btn.disabled = true;
-    btn.classList.remove('done');
-    btn.classList.add('loading');
-    btn.innerHTML = '<span class="spinner"></span>CHARGING $'+amount+'…';
-
-    const endpoint = GATEWAY+'/rest/v2/mobile/transactions/sale';
-    const body = {
-      type: 'SALE',
-      amount: amount,
-      'software-type': 'RTN-SMART-POS',
-      'software-type-version': '1.0'
-    };
-    const headers = {
-      'Content-Type': 'application/json',
-      'api-key': ACCESS_KEY,
-      'mobilejwt': jwtToken
-    };
-
-    log('INFO','Charging $'+amount+'...','info');
-
-    // Debug ②
-    document.getElementById('d2').innerHTML =
-      kv('Endpoint', endpoint) +
-      kv('api-key', ACCESS_KEY.substring(0,6)+'••••••') +
-      kv('mobilejwt', jwtToken.substring(0,30)+'...') +
-      kv('Amount', '$'+amount) +
-      kv('Type', 'SALE') +
-      kv('software-type', 'RTN-SMART-POS');
-
-    const t0 = Date.now();
-    let status = 0, raw = '';
-
-    try {
-      const resp = await fetch(endpoint, {method:'POST', headers, body:JSON.stringify(body)});
-      status = resp.status;
-      raw    = await resp.text();
-      lastRaw = raw;
-      const ms = Date.now()-t0;
-
-      let json = null;
-      try { json = JSON.parse(raw); } catch(e) {}
-
-      const txn  = json?.payload?.transaction || json?.payload || {};
-      const rc   = txn['result-code']         || json?.['result-code']    || '';
-      const msg  = txn['display-message']     || txn['result-message']    || json?.['result-message'] || '';
-      const auth = txn['authorization-code']  || txn['auth-code']         || '';
-      const l4   = txn['last-four']           || '';
-      const ct   = txn['card-type']           || '';
-      const tid  = txn['id']                  || txn['transaction-id']    || '';
-
-      // Debug ③
-      document.getElementById('d3').innerHTML =
-        kv('HTTP Status', status, status===200?'ok':'err') +
-        kv('Timing', ms+'ms') +
-        kv('Result Code', rc||'—', rc==='000'?'ok':'err') +
-        kv('Message', msg) +
-        (auth ? kv('Auth Code',      auth, 'ok') : '') +
-        (tid  ? kv('Transaction ID', tid,  'ok') : '') +
-        (l4   ? kv('Last Four',      l4        ) : '') +
-        (ct   ? kv('Card Type',      ct        ) : '');
-
-      // Raw ⑤
-      try { document.getElementById('d5').textContent = JSON.stringify(JSON.parse(raw),null,2); }
-      catch(e) { document.getElementById('d5').textContent = raw; }
-
-      if(rc === '000') {
-        log('OK','✅ APPROVED! Auth: '+auth,'ok');
+function charge(){
+  if(!jwt){log('ERR','No token — get token first','err');return;}
+  var btn=document.getElementById('btn-charge');
+  btn.disabled=true;
+  btn.className='btn btn-outline';
+  btn.innerHTML='<span class="spinner"></span>CHARGING $1.00…';
+  var ep=GW+'/rest/v2/mobile/transactions/sale';
+  var body={type:'SALE',amount:'1.00','software-type':'RTN-SMART-POS','software-type-version':'1.0'};
+  var hdrs={'Content-Type':'application/json','api-key':AK,'mobilejwt':jwt};
+  log('INFO','Charging $1.00...','info');
+  document.getElementById('d2').innerHTML=
+    kv('Endpoint',ep)+
+    kv('api-key',AK.substring(0,6)+'••••••')+
+    kv('mobilejwt',jwt.substring(0,30)+'...')+
+    kv('Amount','$1.00')+kv('Type','SALE');
+  var t0=Date.now();
+  fetch(ep,{method:'POST',headers:hdrs,body:JSON.stringify(body)})
+  .then(function(r){
+    var st=r.status;
+    return r.text().then(function(raw){
+      var ms=Date.now()-t0;
+      var j2=null;try{j2=JSON.parse(raw);}catch(e){}
+      var txn=(j2&&j2.payload&&j2.payload.transaction)||(j2&&j2.payload)||{};
+      var rc=txn['result-code']||(j2&&j2['result-code'])||'';
+      var msg=txn['display-message']||txn['result-message']||'';
+      var auth=txn['authorization-code']||txn['auth-code']||'';
+      var l4=txn['last-four']||'';
+      var ct=txn['card-type']||'';
+      var tid=txn['id']||txn['transaction-id']||'';
+      document.getElementById('d3').innerHTML=
+        kv('HTTP',st,st===200?'ok':'err')+
+        kv('Timing',ms+'ms')+
+        kv('Result Code',rc||'—',rc==='000'?'ok':'err')+
+        kv('Message',msg)+
+        (auth?kv('Auth Code',auth,'ok'):'')+
+        (tid?kv('Txn ID',tid,'ok'):'')+
+        (l4?kv('Last Four',l4):'')+
+        (ct?kv('Card Type',ct):'');
+      try{document.getElementById('d5').textContent=JSON.stringify(JSON.parse(raw),null,2);}
+      catch(e){document.getElementById('d5').textContent=raw;}
+      if(rc==='000'){
+        log('OK','🎉 APPROVED! Auth: '+auth,'ok');
         log('OK',ct+' ending '+l4,'ok');
-        log('OK','Transaction ID: '+tid,'ok');
-        log('OK','$'+amount+' charged successfully','ok');
-
-        showOk('charge-result',
-          '✅ PAYMENT APPROVED!\n\n' +
-          'Auth Code: '+auth+'\n' +
-          'Card: '+ct+' •••• '+l4+'\n' +
-          'Amount: $'+amount+'\n' +
-          'Transaction ID: '+tid
-        );
-
-        document.getElementById('d4').innerHTML =
-          `<div class="diag-box diag-ok">
-            ✅ Payment approved successfully!<br>
-            <strong>Auth: ${auth}</strong><br>
-            Card: ${ct} •••• ${l4}<br>
-            Amount: $${amount}<br>
-            Txn ID: ${tid}
-          </div>`;
-
-        badge('APPROVED ✅', true);
-        btn.classList.remove('loading');
-        btn.classList.add('approved');
-        btn.innerHTML = '✅ APPROVED! CHARGE ANOTHER?';
-        btn.disabled  = false;
-        jwtToken = null; // reset for next charge
-
-      } else {
+        log('OK','Txn ID: '+tid,'ok');
+        var cr=document.getElementById('charge-result');
+        cr.className='result ok v';
+        cr.innerHTML='🎉 <strong>PAYMENT APPROVED!</strong><br><br>Auth: <strong>'+auth+'</strong><br>'+ct+' •••• '+l4+'<br>$1.00 charged<br>Txn: '+tid;
+        document.getElementById('d4').innerHTML='<div class="diag ok">🎉 APPROVED!<br><strong>Auth: '+auth+'</strong><br>'+ct+' •••• '+l4+'<br>Txn: '+tid+'</div>';
+        badge('APPROVED ✅',true);
+        btn.className='btn btn-approved';
+        btn.innerHTML='🎉 APPROVED!';
+        btn.disabled=false;
+        jwt=null;
+      }else{
         log('ERR','Result: '+rc+' — '+msg,'err');
-        showErr('charge-result','❌ '+rc+': '+msg);
-        document.getElementById('d4').innerHTML =
-          `<div class="diag-box diag-fail">❌ ${rc}: ${msg}<br>→ Check credentials or try again</div>`;
-        badge('DECLINED', false);
-        btn.classList.remove('loading');
-        btn.innerHTML = '⚡ RETRY CHARGE';
-        btn.disabled = false;
+        var cr=document.getElementById('charge-result');
+        cr.className='result fail v';
+        cr.innerHTML='❌ '+rc+': '+msg;
+        document.getElementById('d4').innerHTML='<div class="diag fail">❌ '+rc+': '+msg+'</div>';
+        badge('FAILED',false);
+        btn.className='btn btn-green';
+        btn.innerHTML='⚡ RETRY CHARGE';
+        btn.disabled=false;
       }
-
-    } catch(err) {
-      log('ERR','Network: '+err.message,'err');
-      showErr('charge-result','❌ Network error\n→ Home WiFi required (Imperva WAF)');
-      document.getElementById('d3').innerHTML = kv('Error', err.message, 'err');
-      document.getElementById('d4').innerHTML =
-        `<div class="diag-box diag-err">❌ Network error<br>→ Must be on home residential WiFi<br>→ Imperva WAF blocks cloud IPs</div>`;
-      document.getElementById('d5').textContent = err.toString();
-      badge('NETWORK ERR', false);
-      btn.classList.remove('loading');
-      btn.innerHTML = '⚡ RETRY';
-      btn.disabled = false;
-    }
-  }
-
-  // ── RESULT HELPERS ───────────────────────────────────
-  function showOk(id, msg) {
-    const el = document.getElementById(id);
-    el.className = 'result-box ok visible';
-    el.innerHTML = msg.replace(/\n/g,'<br>');
-  }
-  function showErr(id, msg) {
-    const el = document.getElementById(id);
-    el.className = 'result-box err visible';
-    el.innerHTML = msg.replace(/\n/g,'<br>');
-  }
-
-  // ── BOOT ─────────────────────────────────────────────
-  window.addEventListener('load', function() {
-    log('INFO','RTN SMART Mobile Payment ready','info');
-    log('INFO','Tap a test card chip to auto-fill','info');
+    });
+  })
+  .catch(function(err){
+    log('ERR','Charge error: '+err.message,'err');
+    var cr=document.getElementById('charge-result');
+    cr.className='result fail v';
+    cr.innerHTML='❌ '+err.message+'<br>→ Home WiFi required';
+    document.getElementById('d4').innerHTML='<div class="diag fail">❌ '+err.message+'</div>';
+    document.getElementById('d5').textContent=err.toString();
+    badge('NETWORK ERR',false);
+    btn.className='btn btn-green';
+    btn.innerHTML='⚡ RETRY';btn.disabled=false;
   });
+}
+
+window.addEventListener('load',function(){
+  log('INFO','RTN SMART ready','info');
+  loadSDK();
+});
 </script>
 
 </body>
