@@ -1,95 +1,437 @@
-import http.server,urllib.request,urllib.error,json,os,sys
-PORT=int(os.environ.get(‘PORT’,5050))
-A=[‘https://gateway-sb.clearent.net’,‘https://gateway-int.clearent.net’,‘https://gateway.clearent.net’]
-DEFAULT=‘https://gateway-sb.clearent.net’
-C={‘Access-Control-Allow-Origin’:’*’,‘Access-Control-Allow-Methods’:‘GET,POST,PUT,DELETE,OPTIONS’,‘Access-Control-Allow-Headers’:‘Content-Type,AccessKey,MerchantId,X-Target-Gateway,api-key,mobilejwt,Authorization’}
-P={‘accesskey’,‘merchantid’,‘content-type’,‘authorization’,‘api-key’,‘mobilejwt’}
-S={‘transfer-encoding’,‘connection’,‘keep-alive’}
+import os
+import json
+import urllib.request
+import urllib.error
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from threading import Thread
 
-HTML=b”””<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/><title>RTN SMART Payment Test</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0D1F3C;color:#E8DFC8;font-family:sans-serif;min-height:100vh;padding:20px}.w{max-width:480px;margin:0 auto;padding-bottom:60px}h1{font-size:30px;color:#fff;margin-bottom:6px}h1 span{color:#F5A623}.sub{font-size:13px;color:rgba(232,223,200,.5);margin-bottom:20px;line-height:1.5}.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.18);border-radius:20px;padding:4px 12px;margin-bottom:12px;font-size:11px;font-weight:600;color:#F5A623;text-transform:uppercase}.dot{width:6px;height:6px;background:#F5A623;border-radius:50%;animation:pulse 2s infinite}.card{background:#162847;border:1px solid rgba(245,166,35,.18);border-radius:16px;overflow:hidden;margin-bottom:16px}.ch{padding:14px 18px;border-bottom:1px solid rgba(245,166,35,.18);display:flex;align-items:center;gap:12px}.ci{width:38px;height:38px;border-radius:10px;background:rgba(245,166,35,.12);display:flex;align-items:center;justify-content:center;font-size:18px}.ct{font-weight:600;font-size:15px;color:#fff}.cd{font-size:12px;color:rgba(232,223,200,.5);margin-top:2px}.cb{padding:16px 18px}label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(232,223,200,.5);display:block;margin-bottom:6px}.field{margin-bottom:14px}.tc{background:rgba(0,0,0,.2);border-radius:8px;padding:10px 12px;font-family:monospace;font-size:12px;line-height:2;margin-bottom:12px}.tc span{color:#4ADE80}#payment-form{background:rgba(255,255,255,.03);border:1px solid rgba(245,166,35,.18);border-radius:10px;padding:8px;min-height:130px}.aw{background:rgba(13,31,60,.7);border:1px solid rgba(245,166,35,.18);border-radius:10px;display:flex;align-items:center;padding:0 16px;gap:6px}.as{font-size:28px;color:rgba(232,223,200,.5);font-weight:700}.aw input{flex:1;background:transparent;border:none;padding:12px 0;font-size:32px;color:#E8DFC8;font-family:monospace;outline:none}.btn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,#F5A623,#E8920A);color:#0D1F3C;font-size:20px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:12px;transition:all .18s}.btn:disabled{opacity:.4;pointer-events:none}.pbg{background:rgba(13,31,60,.8);border-radius:20px;height:8px;overflow:hidden;margin:12px 0 4px;display:none}.pf{height:100%;border-radius:20px;width:0%;background:linear-gradient(90deg,#F5A623,#FFD06B);transition:width .4s}.pl{font-size:12px;color:rgba(232,223,200,.5);font-family:monospace;display:none;margin-bottom:8px}.con{background:#080F1E;border:1px solid rgba(245,166,35,.18);border-radius:12px;padding:12px;margin-top:12px;max-height:220px;overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.8;display:none}.con.show{display:block}.ll{display:flex;gap:6px}.lts{color:#4A6FA5;font-size:10px;flex-shrink:0}.ltag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;text-transform:uppercase;flex-shrink:0}.tok{background:rgba(27,138,90,.25);color:#4ADE80}.terr{background:rgba(192,57,43,.25);color:#FC8181}.tinf{background:rgba(74,111,165,.25);color:#93B4D4}.tdbg{background:rgba(139,92,246,.25);color:#C4B5FD}.twrn{background:rgba(230,126,34,.25);color:#FCA05A}.lm{flex:1;word-break:break-all}.mok{color:#4ADE80}.merr{color:#FC8181}.minf{color:rgba(232,223,200,.6)}.mdbg{color:#C4B5FD}.mwrn{color:#FCA05A}.rbox{border-radius:14px;padding:18px;margin-top:12px;display:none;justify-content:space-between;align-items:center}.rbox.show{display:flex}.rbox.ok{background:rgba(27,138,90,.12);border:1px solid rgba(27,138,90,.3)}.rbox.fail{background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.3)}.rs{font-size:24px;font-weight:700;letter-spacing:2px}.rbox.ok .rs{color:#4ADE80}.rbox.fail .rs{color:#FC8181}.rd{font-family:monospace;font-size:11px;color:rgba(232,223,200,.5);margin-top:4px;line-height:1.6}.rd strong{color:#4ADE80}.bnew{background:#F5A623;color:#0D1F3C;font-weight:700;font-size:14px;border:none;border-radius:10px;padding:10px 16px;cursor:pointer;flex-shrink:0}.dbgp{margin-top:12px;display:none}.dbgh{display:flex;justify-content:space-between;align-items:center;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);border-radius:12px 12px 0 0;padding:10px 14px;cursor:pointer}.dbgt{font-size:15px;font-weight:700;color:#C4B5FD;letter-spacing:1px}.dbgb2{font-size:9px;font-weight:700;background:rgba(139,92,246,.25);color:#C4B5FD;padding:2px 8px;border-radius:10px}.dbgtog{font-size:11px;color:rgba(232,223,200,.5)}.dbgbody{background:#060D1A;border:1px solid rgba(139,92,246,.2);border-top:none;border-radius:0 0 12px 12px}.dbgbody.closed{display:none}.dbgs{border-bottom:1px solid rgba(139,92,246,.15);padding:12px 14px}.dbgs:last-child{border-bottom:none}.dbgst{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#C4B5FD;margin-bottom:8px}.crow{display:flex;gap:8px;margin-bottom:6px;font-size:11px;line-height:1.5}.cic{flex-shrink:0}.clb{flex:1}.cv{font-family:monospace;font-size:10px;color:#C4B5FD;word-break:break-all;margin-top:2px}.pass .clb{color:#4ADE80}.fail .clb{color:#FC8181}.warn .clb{color:#FCA05A}.info .clb{color:rgba(232,223,200,.5)}.raw{background:#030810;border-radius:8px;padding:10px;font-family:monospace;font-size:10px;color:#93B4D4;line-height:1.6;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto}.cpybtn{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#C4B5FD;font-family:monospace;font-size:11px;padding:4px 10px;border-radius:8px;cursor:pointer;float:right;margin-bottom:6px}.tb{background:rgba(27,138,90,.08);border:1px solid rgba(27,138,90,.2);border-radius:8px;padding:8px;font-family:monospace;font-size:9px;color:#4ADE80;word-break:break-all;margin-top:8px;display:none}.steps{display:flex;align-items:center;gap:8px;margin-bottom:16px}.st{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}.st.a{background:#F5A623;color:#0D1F3C}.st.d{background:rgba(27,138,90,.3);color:#4ADE80;border:1px solid rgba(27,138,90,.5)}.st.o{background:rgba(255,255,255,.05);color:rgba(232,223,200,.5);border:1px solid rgba(245,166,35,.18)}.sl{font-size:11px;color:rgba(232,223,200,.5)}.sl.a{color:#E8DFC8;font-weight:600}.dv{flex:1;height:1px;background:rgba(245,166,35,.18)}.ib{background:rgba(74,111,165,.08);border:1px solid rgba(74,111,165,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:#93B4D4;line-height:1.7;margin-bottom:14px}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin .7s linear infinite;display:inline-block}::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(245,166,35,.2);border-radius:2px}</style></head>
+PORT = int(os.environ.get(‘PORT’, 5050))
 
-<body><div class="w">
-<div class="badge"><span class="dot"></span>RTN SMART</div>
-<h1>JS SDK <span>TEST</span></h1>
-<p class="sub">Tests sandbox credentials from iPhone. Clearent hosts the card form — no CORS issues.</p>
-<div class="steps" id="steps"><div class="st a" id="s1">1</div><div class="sl a" id="sl1">Enter Card</div><div class="dv"></div><div class="st o" id="s2">2</div><div class="sl" id="sl2">Token</div><div class="dv"></div><div class="st o" id="s3">3</div><div class="sl" id="sl3">Charge</div></div>
-<div class="ib"><strong style="color:#F5A623">Test Card:</strong> 4111 1111 1111 1111 &nbsp;|&nbsp; Exp: any future &nbsp;|&nbsp; CVV: 999</div>
-<div class="card"><div class="ch"><div class="ci">💳</div><div><div class="ct">Clearent Secure Card Form</div><div class="cd">Hosted by Clearent — PCI iframe</div></div></div>
-<div class="cb"><div class="field"><label>Payment Form</label><div id="payment-form"></div></div>
-<button class="btn" id="bt" onclick="getToken()"><span id="bti">🔐</span> GET TOKEN</button></div></div>
-<div class="card"><div class="ch"><div class="ci">💵</div><div><div class="ct">Charge Amount</div><div class="cd">Min $1.00 to approve</div></div></div>
-<div class="cb"><div class="field"><label>Amount (USD)</label><div class="aw"><span class="as">$</span><input type="number" id="amt" value="1.00" step="0.01" min="1.00" inputmode="decimal"/></div></div>
-<div class="tb" id="tb"></div>
-<button class="btn" id="bc" onclick="chargeToken()" disabled><span id="bci">⚡</span> CHARGE $1.00</button></div></div>
-<div class="pbg" id="pbg"><div class="pf" id="pf"></div></div><div class="pl" id="pl"></div>
-<div class="con" id="con"></div>
-<div class="rbox" id="rb"><div><div class="rs" id="rs">—</div><div class="rd" id="rd">—</div></div><button class="bnew" onclick="reset()">NEW</button></div>
-<div class="dbgp" id="dp"><div class="dbgh" onclick="toggleDbg()"><div style="display:flex;align-items:center;gap:8px"><span>🔬</span><span class="dbgt">DEBUG REPORT</span><span class="dbgb2" id="db">PENDING</span></div><span class="dbgtog" id="dt">▼ expand</span></div>
-<div class="dbgbody closed" id="dbd">
-<div class="dbgs"><div class="dbgst">① Token Response</div><div id="d1"></div></div>
-<div class="dbgs"><div class="dbgst">② Charge Request</div><div id="d2"></div></div>
-<div class="dbgs"><div class="dbgst">③ Charge Response</div><div id="d3"></div></div>
-<div class="dbgs"><div class="dbgst">④ Raw Payload</div><button class="cpybtn" onclick="copy()">⎘ Copy</button><div style="clear:both"></div><div class="raw" id="dr">—</div></div>
-</div></div>
+GATEWAY = ‘https://gateway-sb.clearent.net’
+ACCESS_KEY = ‘9e16eb7e04954bae8532d8cbdc77417b’
+PUBLIC_KEY = ‘307a301406072a8648ce3d020106092b240303020801010c03620044b3b059f574e567b9a9df877536a2240415193b6e1924b85aee93c170e836cff44904ad92b3bcfce3a5a6357db241bb7384ca253130420a6048889ab272a38844dac5ff099f2ecc91e4335d8eaa4c1e46f1165707f7c782ed1f3290088da3b75’
+
+HTML_PAGE = ‘’’<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="dark">
+<title>RTN SMART - Mobile Payment</title>
+<style>
+:root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c27;--border:#2a2a3d;--accent:#00e5a0;--accent2:#0088ff;--warn:#ff9500;--danger:#ff3b30;--text:#f0f0f5;--muted:#6b6b80}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#0a0a0f}
+body{background:#0a0a0f;color:#f0f0f5;font-family:'SF Mono','Fira Code',monospace;font-size:13px;min-height:100vh;max-width:480px;margin:0 auto;padding:16px}
+header{text-align:center;padding:20px 0 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
+header h1{font-size:18px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
+header p{color:var(--muted);font-size:11px;margin-top:4px;letter-spacing:1px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.step-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#000;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-title{font-size:12px;font-weight:700;color:var(--text);letter-spacing:1px;text-transform:uppercase}
+.sdk-status{font-size:10px;padding:7px 12px;border-radius:6px;margin-bottom:10px;text-align:center;letter-spacing:0.5px}
+.s-load{background:#1a1a00;color:#ffcc00;border:1px solid #ffcc00}
+.s-ok{background:#001a0e;color:var(--accent);border:1px solid var(--accent)}
+.s-err{background:#1a0000;color:var(--danger);border:1px solid var(--danger)}
+#card-frame{background:#fff;border-radius:7px;min-height:180px;border:2px solid var(--border);overflow:hidden;transition:border-color 0.3s}
+#card-frame.ready{border-color:var(--accent)}
+label{display:block;color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;margin-top:12px}
+label:first-of-type{margin-top:0}
+input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'SF Mono','Fira Code',monospace;font-size:13px;padding:10px 12px;outline:none;-webkit-appearance:none;color-scheme:dark}
+input:focus{border-color:var(--accent)}
+.btn-main{width:100%;background:var(--accent);border:none;border-radius:10px;color:#000;font-family:'SF Mono','Fira Code',monospace;font-size:14px;font-weight:800;letter-spacing:2px;padding:16px;cursor:pointer;text-transform:uppercase;margin-top:10px;-webkit-appearance:none;transition:all 0.2s}
+.btn-main:disabled{opacity:0.3}
+.btn-main.loading{background:var(--surface2);color:var(--accent);border:1px solid var(--accent)}
+.btn-main.done{background:#001a0e;color:var(--accent);border:1px solid var(--accent)}
+.btn-main.approved{background:var(--accent);color:#000}
+.token-box{display:none;background:#001a0e;border:1px solid var(--accent);border-radius:7px;padding:10px 12px;font-size:10px;color:var(--accent);margin-top:10px;line-height:1.6;word-break:break-all}
+.token-box.visible{display:block}
+.log-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px;max-height:160px;overflow-y:auto;font-size:10px;line-height:1.9}
+.ll{display:flex;gap:6px}.lt{color:var(--muted);flex-shrink:0;font-size:9px}
+.lk{flex-shrink:0;font-weight:700;min-width:34px;text-align:center;border-radius:3px;padding:0 3px;font-size:9px}
+.lok{background:#001a0e;color:var(--accent)}.ler{background:#1a0000;color:var(--danger)}
+.lin{background:#001a2a;color:var(--accent2)}.ldb{background:#1a1a00;color:#ffcc00}
+.lm{color:var(--text);word-break:break-all}
+#debug-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-top:16px;display:none}
+#debug-panel.visible{display:block}
+.dbg-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.dbg-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)}
+.dbg-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px}
+.b-ok{background:#001a0e;color:var(--accent);border:1px solid var(--accent)}
+.b-fail{background:#1a0000;color:var(--danger);border:1px solid var(--danger)}
+.dbg-tog{color:var(--muted);font-size:11px}
+.ds{border-bottom:1px solid var(--border);padding:12px 16px}.ds:last-child{border-bottom:none}
+.dst{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.c1{color:var(--accent2)}.c2{color:var(--accent)}.c3{color:var(--warn)}.c4{color:var(--muted)}
+.dkv{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;font-size:11px}
+.dk{color:var(--muted);flex-shrink:0}.dv{color:var(--text);text-align:right;word-break:break-all}
+.dv.ok{color:var(--accent);font-weight:700}.dv.err{color:var(--danger);font-weight:700}
+.diag-box{border-radius:7px;padding:10px 12px;font-size:11px;line-height:1.7}
+.diag-ok{background:#001a0e;border:1px solid var(--accent);color:#80ffc8}
+.diag-fail{background:#1a0e00;border:1px solid var(--warn);color:#ffcc80}
+.raw-pre{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px;font-size:10px;color:var(--muted);white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;line-height:1.5}
+.btn-copy{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:monospace;font-size:10px;padding:5px 10px;cursor:pointer;margin-top:8px}
+.btn-copy.copied{color:var(--accent);border-color:var(--accent)}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;padding:20px 0;color:var(--muted);font-size:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>RTN SMART</h1>
+  <p>JS SDK · MOBILE PAYMENT · SHOP N SAVE DEV</p>
+</header>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Enter Card</div></div>
+  <div id="sdk-status" class="sdk-status s-load">⏳ Loading Clearent SDK…</div>
+  <div id="card-frame"><div id="payment-form"></div></div>
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.9">
+    💳 TEST CARD<br>
+    Visa: <span style="color:var(--accent);font-weight:700">4111 1111 1111 1111</span><br>
+    Exp: <span style="color:var(--accent)">Any future MM/YY</span> &nbsp;CVV: <span style="color:var(--accent)">999</span> &nbsp;ZIP: <span style="color:var(--accent)">85284</span>
+  </div>
+  <button class="btn-main" id="btn-token" onclick="getToken()" disabled>🔒 GET TOKEN</button>
+  <div class="token-box" id="token-box"></div>
 </div>
-<script src="https://gateway-sb.clearent.net/js-sdk/js/clearent-host.js"></script>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Amount</div></div>
+  <label>Amount USD — min $1.00</label>
+  <input type="number" id="amount" value="1.00" min="1.00" step="0.01" oninput="updateBtn()"/>
+</div>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Charge</div></div>
+  <button class="btn-main" id="btn-charge" onclick="chargeCard()" disabled>⚡ CHARGE $1.00</button>
+</div>
+
+<div class="step">
+  <div class="step-header"><div class="step-num" style="background:var(--accent2);color:#fff;font-size:10px">LOG</div><div class="step-title">Live Log</div></div>
+  <div class="log-wrap" id="log-box"></div>
+</div>
+
+<div id="debug-panel">
+  <div class="dbg-hdr" onclick="toggleDbg()">
+    <div style="display:flex;align-items:center">
+      <span class="dbg-title">🔍 Debug Report</span>
+      <span class="dbg-badge" id="dbg-badge"></span>
+    </div>
+    <span class="dbg-tog" id="dbg-tog">▼ OPEN</span>
+  </div>
+  <div id="dbg-body">
+    <div class="ds"><div class="dst c1">① Token Response</div><div id="d1"></div></div>
+    <div class="ds"><div class="dst c2">② Charge Request</div><div id="d2"></div></div>
+    <div class="ds"><div class="dst c3">③ Charge Response</div><div id="d3"></div></div>
+    <div class="ds"><div class="dst c3">④ Diagnosis</div><div id="d4"></div></div>
+    <div class="ds">
+      <div class="dst c4">⑤ Raw Payload</div>
+      <pre class="raw-pre" id="d5">—</pre>
+      <button class="btn-copy" id="btn-copy" onclick="copyRaw()">COPY RAW</button>
+    </div>
+  </div>
+</div>
+
+<footer>RTN SMART Debug Standard v1.0 · JS SDK · Render Proxy</footer>
+
 <script>
-const PK='307a301406072a8648ce3d020106092b240303020801010c036200044b3b059f574e567b9a9df877536a2240415193b6e1924b85aee93c170e836cff44904ad92b3bcfce3a5a6357db241bb7384ca253130420a6048889ab272a38844dac5ff099f2ecc91e4335d8eaa4c1e46f1165707f7c782ed1f3290088da3b75';
-const AK='9e16eb7e04954bae8532d8cbdc77417b';
-const PROXY=window.location.origin;
-const GW='https://gateway-sb.clearent.net';
-let jwt=null,raw='—',dbgO=false;
-window.addEventListener('load',()=>{try{ClearentSDK.init({baseUrl:GW,pk:PK});lg('ok','SDK loaded ✅ — enter test card above');}catch(e){lg('err','SDK load failed: '+e.message);}});
-function ClearentTokenSuccess(r,j){const d=typeof j==='string'?JSON.parse(j):j;jwt=d.payload['mobile-jwt'].jwt;const l4=d.payload['mobile-jwt']['last-four'];lg('ok','✅ Token! Last4: '+l4);dR('d1','✅','Token','OK','pass');dR('d1','💳','Last4',l4,'pass');dR('d1','🔑','JWT',jwt.substr(0,60)+'...','info');document.getElementById('tb').style.display='block';document.getElementById('tb').textContent='JWT: '+jwt.substr(0,80)+'...';document.getElementById('bc').disabled=false;document.getElementById('bc').innerHTML='<span>⚡</span> CHARGE $'+parseFloat(document.getElementById('amt').value).toFixed(2);document.getElementById('bti').textContent='✅';document.getElementById('bt').disabled=false;setP(50,'Token received — tap CHARGE!');setSt(2);setBdg('TOKEN OK',true);showD();lg('ok','Tap CHARGE to complete!');}
-function ClearentTokenError(r,j){const d=typeof j==='string'?JSON.parse(j):j;const m=d.message||JSON.stringify(d);lg('err','Token err: '+m);dR('d1','❌','Error',m,'fail');document.getElementById('bti').textContent='🔐';document.getElementById('bt').disabled=false;hideP();setBdg('FAIL',false);showD();openD();}
-function getToken(){document.getElementById('bt').disabled=true;document.getElementById('bti').className='spin';document.getElementById('bti').textContent='⟳';showC();showP();showD();clearD();setP(20,'Getting token...');lg('info','Requesting JWT from SDK...');ClearentSDK.getPaymentToken();}
-async function chargeToken(){if(!jwt){lg('err','No token');return;}const amt=parseFloat(document.getElementById('amt').value).toFixed(2);document.getElementById('bc').disabled=true;document.getElementById('bci').className='spin';document.getElementById('bci').textContent='⟳';setP(60,'Charging...');lg('info','POST mobile/transactions/sale $'+amt);const body={type:'SALE',amount:amt,'software-type':'RTN-SMART','software-type-version':'2.0'};dR('d2','📤','Method','POST','info');dR('d2','🌐','Endpoint',PROXY+'/rest/v2/mobile/transactions/sale','info');dR('d2','💰','Amount','$'+amt,'info');dR('d2','🔑','JWT',jwt.substr(0,50)+'...','info');dR('d2','📦','Body',JSON.stringify(body),'info');lg('dbg','Body: '+JSON.stringify(body));const t0=Date.now();try{const resp=await fetch(PROXY+'/rest/v2/mobile/transactions/sale',{method:'POST',headers:{'api-key':AK,'mobilejwt':jwt,'Content-Type':'application/json','X-Target-Gateway':GW},body:JSON.stringify(body)});const ms=Date.now()-t0;const txt=await resp.text();raw=txt;document.getElementById('dr').textContent=txt;lg('info','HTTP '+resp.status+' '+ms+'ms');dR('d3','🌐','HTTP',resp.status+' ('+ms+'ms)',resp.ok?'pass':'fail');let data;try{data=JSON.parse(txt);}catch(e){data=null;}if(data){const txn=data.payload&&data.payload.transaction;const code=txn?txn['result-code']:(data.code||'???');const msg=txn?txn['display-message']:(data.status||'?');const ok=code==='000';dR('d3','🔢','Code',code,ok?'pass':'fail');dR('d3','💬','Msg',msg,ok?'pass':'warn');if(ok&&txn){dR('d3','🔐','Auth',txn['authorization-code']||'—','pass');dR('d3','💳','Card',txn['card-type']+' ···· '+txn['last-four'],'pass');lg('ok','✅ APPROVED! Auth: '+(txn['authorization-code']||'—'));lg('ok','Card: '+txn['card-type']+' ···· '+txn['last-four']);setP(100,'✅ APPROVED!');setBdg('✅ APPROVED',true);setSt(3);const rb=document.getElementById('rb');rb.className='rbox show ok';document.getElementById('rs').textContent='✅ APPROVED';document.getElementById('rd').innerHTML='$'+amt+' charged!<br><strong>Auth: '+(txn['authorization-code']||'—')+'</strong> · '+txn['card-type']+' ···· '+txn['last-four'];}else{lg('err','Code '+code+' — '+msg);setP(100,'❌ Code '+code);setBdg('❌ '+code,false);const rb=document.getElementById('rb');rb.className='rbox show fail';document.getElementById('rs').textContent='✗ CODE '+code;document.getElementById('rd').innerHTML=msg;openD();}}else{lg('err','Bad JSON');setBdg('❌ JSON',false);openD();}}catch(e){const ms=Date.now()-t0;lg('err','Error '+ms+'ms: '+e.message);raw='Error: '+e.message;document.getElementById('dr').textContent=raw;dR('d3','❌','Error',e.message,'fail');setP(100,'❌ Error');setBdg('❌ ERR',false);const rb=document.getElementById('rb');rb.className='rbox show fail';document.getElementById('rs').textContent='✗ ERROR';document.getElementById('rd').innerHTML=e.message;openD();}document.getElementById('bc').disabled=false;document.getElementById('bci').className='';document.getElementById('bci').textContent='⚡';}
-function setSt(n){for(let i=1;i<=3;i++){const s=document.getElementById('s'+i);const l=document.getElementById('sl'+i);if(i<n){s.className='st d';s.textContent='✓';l.className='sl';}else if(i===n){s.className='st a';l.className='sl a';}else{s.className='st o';l.className='sl';}}}
-function setP(p,t){document.getElementById('pbg').style.display='block';document.getElementById('pl').style.display='block';document.getElementById('pf').style.width=p+'%';document.getElementById('pl').textContent=t;}
-function showP(){document.getElementById('pbg').style.display='block';document.getElementById('pl').style.display='block';}
-function hideP(){document.getElementById('pbg').style.display='none';document.getElementById('pl').style.display='none';}
-function showC(){document.getElementById('con').classList.add('show');}
-function showD(){document.getElementById('dp').style.display='block';}
-function lg(type,msg){const c=document.getElementById('con');const ts=new Date().toLocaleTimeString('en-US',{hour12:false});const tags={ok:'OK',err:'ERR',warn:'WARN',info:'INFO',dbg:'DBG'};const d=document.createElement('div');d.className='ll';d.innerHTML='<span class="lts">'+ts+'</span><span class="ltag t'+type+'">'+(tags[type]||type)+'</span><span class="lm m'+type+'">'+msg+'</span>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
-function dR(sec,ico,label,val,status){const el=document.getElementById(sec);const d=document.createElement('div');d.className='crow '+status;d.innerHTML='<span class="cic">'+ico+'</span><div style="flex:1"><span class="clb">'+label+'</span>'+(val?'<div class="cv">'+val+'</div>':'')+'</div>';el.appendChild(d);}
-function setBdg(t,ok){const b=document.getElementById('db');b.textContent=t;if(ok===true){b.style.background='rgba(27,138,90,.25)';b.style.color='#4ADE80';}if(ok===false){b.style.background='rgba(192,57,43,.25)';b.style.color='#FC8181';}}
-function clearD(){['d1','d2','d3'].forEach(id=>document.getElementById(id).innerHTML='');document.getElementById('dr').textContent='—';raw='—';}
-function toggleDbg(){dbgO=!dbgO;document.getElementById('dbd').classList.toggle('closed',!dbgO);document.getElementById('dt').textContent=dbgO?'▲ collapse':'▼ expand';}
-function openD(){dbgO=true;document.getElementById('dbd').classList.remove('closed');document.getElementById('dt').textContent='▲ collapse';}
-function copy(){navigator.clipboard?.writeText(raw).then(()=>{const b=document.querySelector('.cpybtn');b.textContent='✓';setTimeout(()=>b.textContent='⎘ Copy',2000);});}
-function reset(){jwt=null;document.getElementById('tb').style.display='none';document.getElementById('bc').disabled=true;document.getElementById('bti').textContent='🔐';document.getElementById('rb').className='rbox';document.getElementById('con').innerHTML='';document.getElementById('con').classList.remove('show');hideP();document.getElementById('pf').style.width='0%';document.getElementById('dp').style.display='none';setSt(1);clearD();}
-</script></body></html>"""
+var GATEWAY='https://gateway-sb.clearent.net';
+var ACCESS_KEY='9e16eb7e04954bae8532d8cbdc77417b';
+var PUBLIC_KEY='307a301406072a8648ce3d020106092b240303020801010c03620044b3b059f574e567b9a9df877536a2240415193b6e1924b85aee93c170e836cff44904ad92b3bcfce3a5a6357db241bb7384ca253130420a6048889ab272a38844dac5ff099f2ecc91e4335d8eaa4c1e46f1165707f7c782ed1f3290088da3b75';
+var jwtToken=null,dbgOpen=true;
 
-class H(http.server.BaseHTTPRequestHandler):
-def log_message(self,f,*a):pass
+function log(tag,msg,type){
+  var box=document.getElementById('log-box');
+  var t=new Date().toTimeString().slice(0,8);
+  var cls={ok:'lok',err:'ler',info:'lin',dbg:'ldb'}[type]||'lin';
+  var d=document.createElement('div');
+  d.className='ll';
+  d.innerHTML='<span class="lt">'+t+'</span><span class="lk '+cls+'">'+tag+'</span><span class="lm">'+msg+'</span>';
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+
+function kv(k,v,cls){
+  return '<div class="dkv"><span class="dk">'+k+'</span><span class="dv '+(cls||'')+'">'+v+'</span></div>';
+}
+
+function badge(txt,ok){
+  var b=document.getElementById('dbg-badge');
+  b.textContent=txt;b.className='dbg-badge '+(ok?'b-ok':'b-fail');
+}
+
+function showDebug(){
+  document.getElementById('debug-panel').classList.add('visible');
+  dbgOpen=true;
+  document.getElementById('dbg-body').style.display='block';
+  document.getElementById('dbg-tog').textContent='▲ CLOSE';
+}
+
+function toggleDbg(){
+  dbgOpen=!dbgOpen;
+  document.getElementById('dbg-body').style.display=dbgOpen?'block':'none';
+  document.getElementById('dbg-tog').textContent=dbgOpen?'▲ CLOSE':'▼ OPEN';
+}
+
+function copyRaw(){
+  navigator.clipboard.writeText(document.getElementById('d5').textContent).then(function(){
+    var b=document.getElementById('btn-copy');
+    b.textContent='✅ COPIED';b.classList.add('copied');
+    setTimeout(function(){b.textContent='COPY RAW';b.classList.remove('copied');},2000);
+  });
+}
+
+function updateBtn(){
+  var v=parseFloat(document.getElementById('amount').value||1).toFixed(2);
+  var b=document.getElementById('btn-charge');
+  if(!b.disabled)b.innerHTML='⚡ CHARGE $'+v;
+}
+
+function loadSDK(){
+  log('INFO','Loading Clearent JS SDK...','info');
+  var s=document.createElement('script');
+  s.src=GATEWAY+'/js-sdk/js/clearent-host.js';
+  s.onload=function(){
+    log('OK','SDK loaded ✅','ok');
+    try{
+      ClearentSDK.init({baseUrl:GATEWAY,pk:PUBLIC_KEY,enableLogging:false});
+      log('OK','SDK initialized ✅','ok');
+      log('INFO','Enter test card in white form above','info');
+      document.getElementById('sdk-status').className='sdk-status s-ok';
+      document.getElementById('sdk-status').textContent='✅ Clearent SDK Ready — Enter card above';
+      document.getElementById('card-frame').classList.add('ready');
+      document.getElementById('btn-token').disabled=false;
+    }catch(e){
+      log('ERR','SDK init failed: '+e.message,'err');
+      document.getElementById('sdk-status').className='sdk-status s-err';
+      document.getElementById('sdk-status').textContent='❌ SDK init failed: '+e.message;
+    }
+  };
+  s.onerror=function(){
+    log('ERR','SDK script failed to load','err');
+    document.getElementById('sdk-status').className='sdk-status s-err';
+    document.getElementById('sdk-status').textContent='❌ SDK load failed';
+  };
+  document.head.appendChild(s);
+}
+
+function getToken(){
+  var btn=document.getElementById('btn-token');
+  btn.classList.add('loading');
+  btn.innerHTML='<span class="spinner"></span>GETTING TOKEN…';
+  btn.disabled=true;
+  log('INFO','Requesting JWT from Clearent SDK...','info');
+  try{
+    ClearentSDK.getPaymentToken(function(raw){
+      try{
+        var resp=JSON.parse(raw);
+        var pl=resp.payload||{};
+        var jwt=pl['mobile-jwt']||pl['jwt']||'';
+        var last4=(pl['card']&&pl['card']['last-four-digits'])||pl['last-four']||'????';
+        var rc=resp.code||'';
+        if(jwt&&(rc==='200'||rc===200)){
+          jwtToken=jwt;
+          log('OK','Token received ✅ Last4: '+last4,'ok');
+          log('DBG','JWT: '+jwt.substring(0,40)+'...','dbg');
+          log('INFO','Tap CHARGE to complete payment','info');
+          var tb=document.getElementById('token-box');
+          tb.innerHTML='🔑 TOKEN OK · Last 4: <strong>'+last4+'</strong><br>'+jwt.substring(0,50)+'...';
+          tb.classList.add('visible');
+          document.getElementById('d1').innerHTML=
+            kv('Status','✅ Token received','ok')+
+            kv('Last Four',last4,'ok')+
+            kv('JWT preview',jwt.substring(0,40)+'...');
+          var cb=document.getElementById('btn-charge');
+          cb.disabled=false;cb.classList.add('done');updateBtn();
+          btn.classList.remove('loading');btn.classList.add('done');
+          btn.innerHTML='✅ TOKEN OK — READY TO CHARGE';
+          badge('TOKEN OK',true);showDebug();
+        }else{
+          var em=(pl.error&&pl.error['error-message'])||pl['result-code']||JSON.stringify(pl).substring(0,80);
+          log('ERR','Token failed: '+em,'err');
+          document.getElementById('d1').innerHTML=kv('Status','❌ Failed','err')+kv('Error',em,'err');
+          badge('TOKEN FAIL',false);showDebug();
+          btn.classList.remove('loading');btn.innerHTML='🔒 RETRY GET TOKEN';btn.disabled=false;
+        }
+      }catch(e){
+        log('ERR','Parse error: '+e.message,'err');
+        btn.classList.remove('loading');btn.innerHTML='🔒 RETRY GET TOKEN';btn.disabled=false;
+      }
+    });
+  }catch(e){
+    log('ERR','getPaymentToken error: '+e.message,'err');
+    btn.classList.remove('loading');btn.innerHTML='🔒 RETRY GET TOKEN';btn.disabled=false;
+  }
+}
+
+function chargeCard(){
+  if(!jwtToken){log('ERR','No token','err');return;}
+  var amount=parseFloat(document.getElementById('amount').value).toFixed(2);
+  var btn=document.getElementById('btn-charge');
+  btn.disabled=true;btn.classList.remove('done');btn.classList.add('loading');
+  btn.innerHTML='<span class="spinner"></span>CHARGING $'+amount+'…';
+  var endpoint='/proxy/rest/v2/mobile/transactions/sale';
+  var body={type:'SALE',amount:amount,'software-type':'RTN-SMART-POS','software-type-version':'1.0'};
+  var headers={'Content-Type':'application/json','api-key':ACCESS_KEY,'mobilejwt':jwtToken};
+  log('INFO','Charging $'+amount+' via Render proxy...','info');
+  document.getElementById('d2').innerHTML=
+    kv('Endpoint',endpoint)+
+    kv('api-key',ACCESS_KEY.substring(0,6)+'••••••')+
+    kv('mobilejwt',jwtToken.substring(0,30)+'...')+
+    kv('Amount','$'+amount)+kv('Type','SALE');
+  var t0=Date.now();
+  fetch(endpoint,{method:'POST',headers:headers,body:JSON.stringify(body)})
+  .then(function(r){
+    var status=r.status;
+    return r.text().then(function(raw){
+      var ms=Date.now()-t0;
+      var json=null;try{json=JSON.parse(raw);}catch(e){}
+      var txn=json&&json.payload&&json.payload.transaction||json&&json.payload||{};
+      var rc=txn['result-code']||(json&&json['result-code'])||'';
+      var msg=txn['display-message']||txn['result-message']||(json&&json['result-message'])||'';
+      var auth=txn['authorization-code']||txn['auth-code']||'';
+      var l4=txn['last-four']||'';
+      var ct=txn['card-type']||'';
+      var tid=txn['id']||txn['transaction-id']||'';
+      document.getElementById('d3').innerHTML=
+        kv('HTTP',status,status===200?'ok':'err')+
+        kv('Timing',ms+'ms')+
+        kv('Result Code',rc||'—',rc==='000'?'ok':'err')+
+        kv('Message',msg)+
+        (auth?kv('Auth Code',auth,'ok'):'')+
+        (tid?kv('Txn ID',tid,'ok'):'')+
+        (l4?kv('Last Four',l4):'')+
+        (ct?kv('Card Type',ct):'');
+      try{document.getElementById('d5').textContent=JSON.stringify(JSON.parse(raw),null,2);}
+      catch(e){document.getElementById('d5').textContent=raw;}
+      if(rc==='000'){
+        log('OK','✅ APPROVED! Auth: '+auth,'ok');
+        log('OK',ct+' ending '+l4,'ok');
+        log('OK','Txn ID: '+tid,'ok');
+        log('OK','$'+amount+' charged!','ok');
+        document.getElementById('d4').innerHTML=
+          '<div class="diag-box diag-ok">✅ APPROVED!<br><strong>Auth: '+auth+'</strong><br>Card: '+ct+' •••• '+l4+'<br>Amount: $'+amount+'<br>Txn ID: '+tid+'</div>';
+        badge('APPROVED ✅',true);
+        btn.classList.remove('loading');btn.classList.add('approved');
+        btn.innerHTML='✅ APPROVED! CHARGE ANOTHER?';btn.disabled=false;
+        jwtToken=null;
+      }else{
+        log('ERR','Result: '+rc+' — '+msg,'err');
+        document.getElementById('d4').innerHTML='<div class="diag-box diag-fail">❌ '+rc+': '+msg+'</div>';
+        badge('FAILED',false);
+        btn.classList.remove('loading');btn.innerHTML='⚡ RETRY CHARGE';btn.disabled=false;
+      }
+    });
+  })
+  .catch(function(err){
+    log('ERR','Charge error: '+err.message,'err');
+    document.getElementById('d4').innerHTML='<div class="diag-box diag-fail">❌ '+err.message+'</div>';
+    document.getElementById('d5').textContent=err.toString();
+    badge('ERROR',false);
+    btn.classList.remove('loading');btn.innerHTML='⚡ RETRY';btn.disabled=false;
+  });
+}
+
+window.addEventListener('load',function(){
+  log('INFO','RTN SMART ready','info');
+  loadSDK();
+});
+</script>
+
+</body>
+</html>'''
+
+class Handler(BaseHTTPRequestHandler):
+def log_message(self, format, *args):
+print(f”[{self.command}] {self.path} — {args[0] if args else ‘’}”)
+
+```
+def send_cors(self):
+    self.send_header('Access-Control-Allow-Origin', '*')
+    self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    self.send_header('Access-Control-Allow-Headers', 'Content-Type, AccessKey, MerchantId, api-key, mobilejwt, X-Target-Gateway')
+
 def do_OPTIONS(self):
-self.send_response(200)
-[self.send_header(k,v) for k,v in C.items()]
-self.end_headers()
-def do_GET(self):
-if self.path in (’/’,’/test’,’/health’):
-if self.path==’/health’:
-b=json.dumps({‘status’:‘ok’,‘service’:‘RTN SMART Proxy’}).encode();ct=‘application/json’
-else:
-b=HTML;ct=‘text/html’
-self.send_response(200);self.send_header(‘Content-Type’,ct);self.send_header(‘Content-Length’,str(len(b)));[self.send_header(k,v) for k,v in C.items()];self.end_headers();self.wfile.write(b)
-else:self._p(‘GET’)
-def do_POST(self):self._p(‘POST’)
-def do_PUT(self):self._p(‘PUT’)
-def do_DELETE(self):self._p(‘DELETE’)
-def _p(self,m):
-gw=(self.headers.get(‘X-Target-Gateway’) or DEFAULT).rstrip(’/’)
-if gw not in A:self._e(403,‘not allowed’);return
-t=gw+self.path;cl=int(self.headers.get(‘Content-Length’,0));bd=self.rfile.read(cl) if cl>0 else None
-fh={k:v for k,v in self.headers.items() if k.lower() in P}
-try:
-r=urllib.request.urlopen(urllib.request.Request(t,bd,fh,method=m),timeout=60)
-rb=r.read();self.send_response(r.status);[self.send_header(k,v) for k,v in C.items()];[self.send_header(k,v) for k,v in dict(r.headers).items() if k.lower() not in S];self.send_header(‘Content-Length’,str(len(rb)));self.end_headers();self.wfile.write(rb)
-except urllib.error.HTTPError as e:
-rb=e.read();self.send_response(e.code);[self.send_header(k,v) for k,v in C.items()];self.send_header(‘Content-Length’,str(len(rb)));self.end_headers();self.wfile.write(rb)
-except Exception as e:self._e(502,str(e))
-def _e(self,s,m):
-b=json.dumps({‘error’:m}).encode();self.send_response(s);[self.send_header(k,v) for k,v in C.items()];self.send_header(‘Content-Type’,‘application/json’);self.send_header(‘Content-Length’,str(len(b)));self.end_headers();self.wfile.write(b)
+    self.send_response(200)
+    self.send_cors()
+    self.end_headers()
 
-print(f’RTN SMART Proxy v2 on port {PORT}’,flush=True)
-s=http.server.ThreadingHTTPServer((‘0.0.0.0’,PORT),H);s.daemon_threads=True;s.serve_forever()
+def do_GET(self):
+    if self.path == '/health':
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_cors()
+        self.end_headers()
+        self.wfile.write(json.dumps({'status': 'ok', 'service': 'RTN SMART Proxy'}).encode())
+    elif self.path == '/' or self.path == '/index.html':
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_cors()
+        self.end_headers()
+        self.wfile.write(HTML_PAGE.encode())
+    else:
+        self.send_response(404)
+        self.end_headers()
+
+def do_POST(self):
+    if self.path.startswith('/proxy/'):
+        # Strip /proxy prefix and forward to Clearent
+        target_path = self.path[7:]  # Remove /proxy
+        target_url = GATEWAY + target_path
+
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length) if content_length else b''
+
+        # Forward headers
+        fwd_headers = {
+            'Content-Type': self.headers.get('Content-Type', 'application/json'),
+        }
+        for h in ['api-key', 'mobilejwt', 'AccessKey', 'MerchantId']:
+            if self.headers.get(h):
+                fwd_headers[h] = self.headers.get(h)
+
+        try:
+            req = urllib.request.Request(
+                target_url,
+                data=body,
+                headers=fwd_headers,
+                method='POST'
+            )
+            print(f"  → Forwarding POST to {target_url}")
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                resp_body = resp.read()
+                self.send_response(resp.status)
+                self.send_header('Content-Type', 'application/json')
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(resp_body)
+                print(f"  ← Response: {resp.status}")
+        except urllib.error.HTTPError as e:
+            resp_body = e.read()
+            print(f"  ← HTTP Error: {e.code}")
+            self.send_response(e.code)
+            self.send_header('Content-Type', 'application/json')
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(resp_body)
+        except Exception as e:
+            print(f"  ← Proxy error: {e}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': str(e)}).encode())
+    else:
+        self.send_response(404)
+        self.end_headers()
+```
+
+if **name** == ‘**main**’:
+server = HTTPServer((‘0.0.0.0’, PORT), Handler)
+print(f”RTN SMART Proxy running on port {PORT}”)
+print(f”  GET  /         → JS SDK payment page”)
+print(f”  GET  /health   → health check”)
+print(f”  POST /proxy/*  → forwards to {GATEWAY}”)
+server.serve_forever()
