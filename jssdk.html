@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="dark">
+<title>RTN SMART — Mobile Payment</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: #2a2a3d;
+    --accent: #00e5a0;
+    --accent2: #0088ff;
+    --warn: #ff9500;
+    --danger: #ff3b30;
+    --text: #f0f0f5;
+    --muted: #6b6b80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #0a0a0f; }
+  body {
+    background: #0a0a0f;
+    color: #f0f0f5;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+  header { text-align: center; padding: 20px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  header h1 { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+  header p { color: var(--muted); font-size: 11px; margin-top: 4px; letter-spacing: 1px; }
+
+.step { background: var(–surface); border: 1px solid var(–border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+.step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.step-num { width: 26px; height: 26px; border-radius: 50%; background: var(–accent); color: #000; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-title { font-size: 12px; font-weight: 700; color: var(–text); letter-spacing: 1px; text-transform: uppercase; }
+
+.test-cards { background: var(–surface2); border: 1px solid var(–border); border-radius: 7px; padding: 10px 12px; font-size: 10px; color: var(–muted); margin-bottom: 12px; line-height: 1.9; }
+.test-cards span { color: var(–accent); font-weight: 700; }
+
+/* SDK status */
+.sdk-status { font-size: 10px; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; text-align: center; }
+.sdk-loading { background: #1a1a00; color: #ffcc00; border: 1px solid #ffcc00; }
+.sdk-ready   { background: #001a0e; color: var(–accent); border: 1px solid var(–accent); }
+.sdk-error   { background: #1a0000; color: var(–danger); border: 1px solid var(–danger); }
+
+/* Clearent iframe wrapper */
+#card-frame-wrap {
+background: #fff;
+border-radius: 7px;
+min-height: 180px;
+border: 2px solid var(–border);
+overflow: hidden;
+transition: border-color 0.3s;
+}
+#card-frame-wrap.ready { border-color: var(–accent); }
+
+input {
+width: 100%; background: var(–surface2); border: 1px solid var(–border);
+border-radius: 7px; color: var(–text);
+font-family: ‘SF Mono’, ‘Fira Code’, monospace;
+font-size: 13px; padding: 10px 12px; outline: none;
+-webkit-appearance: none; color-scheme: dark;
+}
+input:focus { border-color: var(–accent); }
+
+.btn-main {
+width: 100%; background: var(–accent); border: none;
+border-radius: 10px; color: #000;
+font-family: ‘SF Mono’, ‘Fira Code’, monospace;
+font-size: 14px; font-weight: 800; letter-spacing: 2px;
+padding: 16px; cursor: pointer; text-transform: uppercase;
+margin-top: 10px; transition: all 0.2s;
+-webkit-appearance: none;
+}
+.btn-main:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-main:active:not(:disabled) { transform: scale(0.98); }
+.btn-main.loading { background: var(–surface2); color: var(–accent); border: 1px solid var(–accent); }
+.btn-main.done { background: #001a0e; color: var(–accent); border: 1px solid var(–accent); }
+
+.token-box { display: none; background: #001a0e; border: 1px solid var(–accent); border-radius: 7px; padding: 10px 12px; font-size: 10px; color: var(–accent); margin-top: 10px; line-height: 1.6; word-break: break-all; }
+.token-box.visible { display: block; }
+
+/* Log */
+.log-wrap { background: var(–surface2); border: 1px solid var(–border); border-radius: 7px; padding: 10px; max-height: 160px; overflow-y: auto; font-size: 10px; line-height: 1.8; }
+.ll { display: flex; gap: 6px; }
+.lt { color: var(–muted); flex-shrink: 0; }
+.lk { flex-shrink: 0; font-weight: 700; min-width: 34px; text-align: center; border-radius: 3px; padding: 0 3px; }
+.lok { background: #001a0e; color: var(–accent); }
+.ler { background: #1a0000; color: var(–danger); }
+.lin { background: #001a2a; color: var(–accent2); }
+.ldb { background: #1a1a00; color: #ffcc00; }
+.lm { color: var(–text); word-break: break-all; }
+
+/* Debug panel */
+#debug-panel { background: var(–surface); border: 1px solid var(–border); border-radius: 10px; margin-top: 20px; display: none; }
+#debug-panel.visible { display: block; }
+.dbg-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(–border); cursor: pointer; }
+.dbg-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(–accent2); }
+.dbg-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+.b-ok   { background: #001a0e; color: var(–accent); border: 1px solid var(–accent); }
+.b-fail { background: #1a0000; color: var(–danger); border: 1px solid var(–danger); }
+.dbg-tog { color: var(–muted); font-size: 11px; }
+
+.ds { border-bottom: 1px solid var(–border); padding: 12px 16px; }
+.ds:last-child { border-bottom: none; }
+.dst { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.c1 { color: var(–accent2); } .c2 { color: var(–accent); }
+.c3 { color: var(–warn); }    .c4 { color: var(–muted); }
+
+.dkv { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; font-size: 11px; }
+.dk { color: var(–muted); flex-shrink: 0; }
+.dv { color: var(–text); text-align: right; word-break: break-all; }
+.dv.ok  { color: var(–accent); font-weight: 700; }
+.dv.err { color: var(–danger); font-weight: 700; }
+
+.diag-box { background: #1a0e00; border: 1px solid var(–warn); border-radius: 7px; padding: 10px 12px; font-size: 11px; line-height: 1.6; color: #ffcc80; }
+.diag-box.ok { background: #001a0e; border-color: var(–accent); color: #80ffc8; }
+
+.raw-pre { background: var(–surface2); border: 1px solid var(–border); border-radius: 7px; padding: 10px; font-size: 10px; color: var(–muted); white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; line-height: 1.5; }
+.btn-copy { background: var(–surface2); border: 1px solid var(–border); border-radius: 6px; color: var(–muted); font-family: monospace; font-size: 10px; padding: 5px 10px; cursor: pointer; margin-top: 8px; }
+.btn-copy.copied { color: var(–accent); border-color: var(–accent); }
+
+.spinner { display: inline-block; width: 11px; height: 11px; border: 2px solid var(–border); border-top-color: var(–accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 5px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+footer { text-align: center; padding: 20px 0; color: var(–muted); font-size: 10px; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <h1>RTN SMART</h1>
+  <p>JS SDK · MOBILE PAYMENT · SHOP N SAVE DEV</p>
+</header>
+
+<!-- STEP 1: CARD -->
+
+<div class="step">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Enter Card</div></div>
+  <div class="test-cards">
+    💳 TEST CARDS — tap to copy<br>
+    Visa: <span id="visa-num" onclick="copyText('4111111111111111')">4111 1111 1111 1111</span> 📋<br>
+    MC:&nbsp;&nbsp; <span onclick="copyText('5431111111111111')">5431 1111 1111 1111</span> 📋<br>
+    Exp: <span>Any future MM/YY</span> · CVV: <span>999</span> · ZIP: <span>85284</span>
+  </div>
+  <div id="sdk-status" class="sdk-status sdk-loading">⏳ Loading Clearent SDK…</div>
+  <div id="card-frame-wrap">
+    <div id="payment-form"></div>
+  </div>
+  <button class="btn-main" id="btn-token" onclick="getToken()" disabled>🔒 GET TOKEN</button>
+  <div class="token-box" id="token-box"></div>
+</div>
+
+<!-- STEP 2: AMOUNT -->
+
+<div class="step">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Amount</div></div>
+  <label style="display:block;color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Amount USD — min $1.00</label>
+  <input type="number" id="amount" value="1.00" min="1.00" step="0.01" oninput="updateChargeBtn()" />
+</div>
+
+<!-- STEP 3: CHARGE -->
+
+<div class="step">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Charge</div></div>
+  <button class="btn-main" id="btn-charge" onclick="chargeCard()" disabled>⚡ CHARGE $1.00</button>
+</div>
+
+<!-- LIVE LOG -->
+
+<div class="step">
+  <div class="step-header"><div class="step-num" style="background:var(--accent2);">📋</div><div class="step-title">Live Log</div></div>
+  <div class="log-wrap" id="log-box"></div>
+</div>
+
+<!-- DEBUG PANEL -->
+
+<div id="debug-panel">
+  <div class="dbg-hdr" onclick="toggleDebug()">
+    <div style="display:flex;align-items:center;">
+      <span class="dbg-title">🔍 Debug Report</span>
+      <span class="dbg-badge" id="dbg-badge"></span>
+    </div>
+    <span class="dbg-tog" id="dbg-tog">▼ OPEN</span>
+  </div>
+  <div id="dbg-body">
+    <div class="ds"><div class="dst c1">① Token Response</div><div id="d1"></div></div>
+    <div class="ds"><div class="dst c2">② Charge Request</div><div id="d2"></div></div>
+    <div class="ds"><div class="dst c3">③ Charge Response</div><div id="d3"></div></div>
+    <div class="ds"><div class="dst c3">④ Diagnosis</div><div id="d4"></div></div>
+    <div class="ds">
+      <div class="dst c4">⑤ Raw Payload</div>
+      <pre class="raw-pre" id="d5">—</pre>
+      <button class="btn-copy" id="btn-copy" onclick="copyRaw()">COPY RAW</button>
+    </div>
+  </div>
+</div>
+
+<footer>RTN SMART Debug Standard v1.0 · JS SDK Mobile Flow</footer>
+
+<script>
+  const GATEWAY    = 'https://gateway-sb.clearent.net';
+  const ACCESS_KEY = '9e16eb7e04954bae8532d8cbdc77417b';
+  const PUBLIC_KEY = '307a301406072a8648ce3d020106092b240303020801010c03620044b3b059f574e567b9a9df877536a2240415193b6e1924b85aee93c170e836cff44904ad92b3bcfce3a5a6357db241bb7384ca253130420a6048889ab272a38844dac5ff099f2ecc91e4335d8eaa4c1e46f1165707f7c782ed1f3290088da3b75';
+
+  let jwtToken  = null;
+  let dbgOpen   = true;
+  let rawText   = '';
+
+  // ── HELPERS ──────────────────────────────────────────
+  function log(tag, msg, type) {
+    const box  = document.getElementById('log-box');
+    const time = new Date().toTimeString().slice(0,8);
+    const cls  = {ok:'lok', err:'ler', info:'lin', dbg:'ldb'}[type] || 'lin';
+    const d = document.createElement('div');
+    d.className = 'll';
+    d.innerHTML = `<span class="lt">${time}</span><span class="lk ${cls}">${tag}</span><span class="lm">${msg}</span>`;
+    box.appendChild(d);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function kv(k, v, cls='') {
+    return `<div class="dkv"><span class="dk">${k}</span><span class="dv ${cls}">${v}</span></div>`;
+  }
+
+  function badge(txt, ok) {
+    const b = document.getElementById('dbg-badge');
+    b.textContent = txt;
+    b.className = 'dbg-badge ' + (ok ? 'b-ok' : 'b-fail');
+  }
+
+  function copyText(txt) {
+    navigator.clipboard.writeText(txt).catch(()=>{});
+  }
+
+  function updateChargeBtn() {
+    const v = parseFloat(document.getElementById('amount').value || 1).toFixed(2);
+    const btn = document.getElementById('btn-charge');
+    if (!btn.disabled) btn.innerHTML = `⚡ CHARGE $${v}`;
+  }
+
+  function toggleDebug() {
+    dbgOpen = !dbgOpen;
+    document.getElementById('dbg-body').style.display = dbgOpen ? 'block' : 'none';
+    document.getElementById('dbg-tog').textContent = dbgOpen ? '▲ CLOSE' : '▼ OPEN';
+  }
+
+  function copyRaw() {
+    navigator.clipboard.writeText(document.getElementById('d5').textContent).then(() => {
+      const b = document.getElementById('btn-copy');
+      b.textContent = '✅ COPIED'; b.classList.add('copied');
+      setTimeout(() => { b.textContent = 'COPY RAW'; b.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ── LOAD SDK DYNAMICALLY ─────────────────────────────
+  // Load SDK via dynamic script tag to avoid cross-origin errors
+  function loadSDK() {
+    log('INFO', 'Loading Clearent JS SDK...', 'info');
+    const script = document.createElement('script');
+    script.src = GATEWAY + '/js-sdk/js/clearent-host.js';
+    script.onload = function() {
+      log('OK', 'SDK script loaded ✅', 'ok');
+      initSDK();
+    };
+    script.onerror = function() {
+      log('ERR', 'SDK failed to load — check internet/residential IP', 'err');
+      document.getElementById('sdk-status').className = 'sdk-status sdk-error';
+      document.getElementById('sdk-status').textContent = '❌ SDK load failed — need residential IP';
+    };
+    document.head.appendChild(script);
+  }
+
+  function initSDK() {
+    try {
+      ClearentSDK.init({
+        baseUrl: GATEWAY,
+        pk: PUBLIC_KEY,
+        enableLogging: false
+      });
+      log('OK', 'Clearent SDK initialized ✅', 'ok');
+      log('INFO', 'Enter test card in form above', 'info');
+      document.getElementById('sdk-status').className = 'sdk-status sdk-ready';
+      document.getElementById('sdk-status').textContent = '✅ Clearent SDK Ready — Enter card below';
+      document.getElementById('card-frame-wrap').classList.add('ready');
+      document.getElementById('btn-token').disabled = false;
+      document.getElementById('btn-token').textContent = '🔒 GET TOKEN';
+    } catch(e) {
+      log('ERR', 'SDK init error: ' + e.message, 'err');
+      document.getElementById('sdk-status').className = 'sdk-status sdk-error';
+      document.getElementById('sdk-status').textContent = '❌ SDK init failed: ' + e.message;
+    }
+  }
+
+  // ── GET TOKEN ────────────────────────────────────────
+  function getToken() {
+    const btn = document.getElementById('btn-token');
+    btn.classList.add('loading');
+    btn.innerHTML = '<span class="spinner"></span>GETTING TOKEN…';
+    btn.disabled = true;
+    log('INFO', 'Requesting JWT from Clearent SDK...', 'info');
+
+    try {
+      ClearentSDK.getPaymentToken(function(raw) {
+        try {
+          const resp = JSON.parse(raw);
+          const pl   = resp.payload || {};
+          const jwt  = pl['mobile-jwt'] || pl['jwt'] || '';
+          const last4 = pl['card']?.['last-four-digits'] || pl['last-four'] || '????';
+          const rc   = resp.code || '';
+
+          if (jwt && (rc === '200' || rc === 200)) {
+            jwtToken = jwt;
+            log('OK', 'Token received ✅', 'ok');
+            log('OK', 'Last 4: ' + last4, 'ok');
+            log('DBG', 'JWT: ' + jwt.substring(0,50) + '...', 'dbg');
+            log('INFO', 'Tap CHARGE to complete payment', 'info');
+
+            // Token box
+            const tb = document.getElementById('token-box');
+            tb.innerHTML = '🔑 TOKEN OK · Last 4: <strong>' + last4 + '</strong><br>' + jwt.substring(0,60) + '...';
+            tb.classList.add('visible');
+
+            // Debug ①
+            document.getElementById('d1').innerHTML =
+              kv('Token Status', '✅ Received successfully', 'ok') +
+              kv('Last Four', last4, 'ok') +
+              kv('JWT (preview)', jwt.substring(0,40) + '...');
+
+            // Enable charge
+            const cb = document.getElementById('btn-charge');
+            cb.disabled = false;
+            cb.classList.add('done');
+            updateChargeBtn();
+
+            btn.classList.remove('loading');
+            btn.classList.add('done');
+            btn.innerHTML = '✅ TOKEN OK · READY TO CHARGE';
+
+            document.getElementById('debug-panel').classList.add('visible');
+            badge('TOKEN OK', true);
+
+          } else {
+            const errMsg = pl?.error?.['error-message'] || pl['result-code'] || JSON.stringify(pl).substring(0,80);
+            log('ERR', 'Token failed: ' + errMsg, 'err');
+            document.getElementById('d1').innerHTML =
+              kv('Token Status', '❌ Failed', 'err') +
+              kv('Error', errMsg, 'err') +
+              kv('Code', rc);
+            document.getElementById('debug-panel').classList.add('visible');
+            badge('TOKEN FAIL', false);
+            btn.classList.remove('loading');
+            btn.innerHTML = '🔒 RETRY GET TOKEN';
+            btn.disabled = false;
+          }
+        } catch(e) {
+          log('ERR', 'Parse error: ' + e.message, 'err');
+          btn.classList.remove('loading');
+          btn.innerHTML = '🔒 RETRY GET TOKEN';
+          btn.disabled = false;
+        }
+      });
+    } catch(e) {
+      log('ERR', 'getPaymentToken error: ' + e.message, 'err');
+      btn.classList.remove('loading');
+      btn.innerHTML = '🔒 RETRY GET TOKEN';
+      btn.disabled = false;
+    }
+  }
+
+  // ── CHARGE ───────────────────────────────────────────
+  async function chargeCard() {
+    if (!jwtToken) { log('ERR', 'No token — get token first', 'err'); return; }
+
+    const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
+    const btn    = document.getElementById('btn-charge');
+    btn.disabled = true;
+    btn.classList.remove('done');
+    btn.classList.add('loading');
+    btn.innerHTML = '<span class="spinner"></span>CHARGING $' + amount + '…';
+
+    const endpoint = GATEWAY + '/rest/v2/mobile/transactions/sale';
+    const body = {
+      type: 'SALE',
+      amount: amount,
+      'software-type': 'RTN-SMART-POS',
+      'software-type-version': '1.0'
+    };
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': ACCESS_KEY,
+      'mobilejwt': jwtToken
+    };
+
+    log('INFO', 'Sending $' + amount + ' charge...', 'info');
+
+    // Debug ②
+    document.getElementById('d2').innerHTML =
+      kv('Endpoint', endpoint) +
+      kv('api-key', ACCESS_KEY.substring(0,6) + '••••••') +
+      kv('mobilejwt', jwtToken.substring(0,30) + '...') +
+      kv('Amount', '$' + amount) +
+      kv('Type', 'SALE');
+
+    const t0 = Date.now();
+    let status = 0;
+
+    try {
+      const resp = await fetch(endpoint, { method:'POST', headers, body: JSON.stringify(body) });
+      status   = resp.status;
+      rawText  = await resp.text();
+      const ms = Date.now() - t0;
+
+      let json = null;
+      try { json = JSON.parse(rawText); } catch(e) {}
+
+      const txn  = json?.payload?.transaction || json?.payload || {};
+      const rc   = txn['result-code']         || json?.['result-code'] || '';
+      const msg  = txn['display-message']     || txn['result-message'] || '';
+      const auth = txn['authorization-code']  || txn['auth-code']      || '';
+      const l4   = txn['last-four']           || '';
+      const ct   = txn['card-type']           || '';
+      const tid  = txn['id']                  || txn['transaction-id'] || '';
+
+      // Debug ③
+      document.getElementById('d3').innerHTML =
+        kv('HTTP Status', status, status===200?'ok':'err') +
+        kv('Timing', ms + 'ms') +
+        kv('Result Code', rc||'—', rc==='000'?'ok':'err') +
+        kv('Message', msg) +
+        (auth ? kv('Auth Code',      auth, 'ok') : '') +
+        (tid  ? kv('Transaction ID', tid,  'ok') : '') +
+        (l4   ? kv('Last Four',      l4        ) : '') +
+        (ct   ? kv('Card Type',      ct        ) : '');
+
+      // Raw ⑤
+      try { document.getElementById('d5').textContent = JSON.stringify(JSON.parse(rawText), null, 2); }
+      catch(e) { document.getElementById('d5').textContent = rawText; }
+
+      if (rc === '000') {
+        log('OK', '✅ APPROVED! Auth: ' + auth, 'ok');
+        log('OK', ct + ' ending ' + l4, 'ok');
+        log('OK', 'Txn ID: ' + tid, 'ok');
+        log('OK', 'Amount: $' + amount + ' charged', 'ok');
+
+        document.getElementById('d4').innerHTML =
+          `<div class="diag-box ok">
+            ✅ Payment APPROVED!<br>
+            Auth Code: <strong>${auth}</strong><br>
+            Card: ${ct} •••• ${l4}<br>
+            Amount: $${amount}<br>
+            Transaction ID: ${tid}
+          </div>`;
+
+        badge('APPROVED ✅', true);
+        btn.classList.remove('loading');
+        btn.classList.add('done');
+        btn.innerHTML = '✅ APPROVED! TAP TO CHARGE AGAIN';
+        btn.disabled = false;
+        jwtToken = null;
+
+      } else {
+        log('ERR', 'Result: ' + rc + ' — ' + msg, 'err');
+        document.getElementById('d4').innerHTML =
+          `<div class="diag-box">❌ ${rc}: ${msg}<br>→ Check credentials or try again</div>`;
+        badge('FAILED', false);
+        btn.classList.remove('loading');
+        btn.innerHTML = '⚡ RETRY CHARGE';
+        btn.disabled = false;
+      }
+
+    } catch(err) {
+      log('ERR', 'Network: ' + err.message, 'err');
+      document.getElementById('d3').innerHTML = kv('Error', err.message, 'err');
+      document.getElementById('d4').innerHTML =
+        `<div class="diag-box">❌ Network error<br>→ Must be on home/residential WiFi<br>→ Imperva WAF blocks non-residential IPs</div>`;
+      document.getElementById('d5').textContent = err.toString();
+      badge('NETWORK ERR', false);
+      btn.classList.remove('loading');
+      btn.innerHTML = '⚡ RETRY';
+      btn.disabled = false;
+    }
+  }
+
+  // ── BOOT ─────────────────────────────────────────────
+  window.addEventListener('load', function() {
+    log('INFO', 'Page loaded — initializing...', 'info');
+    loadSDK();
+  });
+</script>
+
+</body>
+</html>
