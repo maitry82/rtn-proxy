@@ -1,174 +1,95 @@
-#!/usr/bin/env python3
-"""
-╔══════════════════════════════════════════════════════════════╗
-║   RTN SMART — CORS Proxy for Render.com                      ║
-║   rtn_proxy_render.py                                        ║
-╠══════════════════════════════════════════════════════════════╣
-║   Deploy to Render.com (free):                               ║
-║   1. Upload this file + render.yaml to a GitHub repo         ║
-║   2. Connect repo to render.com → auto-deploys               ║
-║   3. Use your Render URL in the test app                     ║
-╚══════════════════════════════════════════════════════════════╝
-"""
+import http.server,urllib.request,urllib.error,json,os,sys
+PORT=int(os.environ.get(‘PORT’,5050))
+A=[‘https://gateway-sb.clearent.net’,‘https://gateway-int.clearent.net’,‘https://gateway.clearent.net’]
+DEFAULT=‘https://gateway-sb.clearent.net’
+C={‘Access-Control-Allow-Origin’:’*’,‘Access-Control-Allow-Methods’:‘GET,POST,PUT,DELETE,OPTIONS’,‘Access-Control-Allow-Headers’:‘Content-Type,AccessKey,MerchantId,X-Target-Gateway,api-key,mobilejwt,Authorization’}
+P={‘accesskey’,‘merchantid’,‘content-type’,‘authorization’,‘api-key’,‘mobilejwt’}
+S={‘transfer-encoding’,‘connection’,‘keep-alive’}
 
-import http.server
-import urllib.request
-import urllib.error
-import json
-import os
-import sys
-import time
-import traceback
-from datetime import datetime
+HTML=b”””<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/><title>RTN SMART Payment Test</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0D1F3C;color:#E8DFC8;font-family:sans-serif;min-height:100vh;padding:20px}.w{max-width:480px;margin:0 auto;padding-bottom:60px}h1{font-size:30px;color:#fff;margin-bottom:6px}h1 span{color:#F5A623}.sub{font-size:13px;color:rgba(232,223,200,.5);margin-bottom:20px;line-height:1.5}.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.18);border-radius:20px;padding:4px 12px;margin-bottom:12px;font-size:11px;font-weight:600;color:#F5A623;text-transform:uppercase}.dot{width:6px;height:6px;background:#F5A623;border-radius:50%;animation:pulse 2s infinite}.card{background:#162847;border:1px solid rgba(245,166,35,.18);border-radius:16px;overflow:hidden;margin-bottom:16px}.ch{padding:14px 18px;border-bottom:1px solid rgba(245,166,35,.18);display:flex;align-items:center;gap:12px}.ci{width:38px;height:38px;border-radius:10px;background:rgba(245,166,35,.12);display:flex;align-items:center;justify-content:center;font-size:18px}.ct{font-weight:600;font-size:15px;color:#fff}.cd{font-size:12px;color:rgba(232,223,200,.5);margin-top:2px}.cb{padding:16px 18px}label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(232,223,200,.5);display:block;margin-bottom:6px}.field{margin-bottom:14px}.tc{background:rgba(0,0,0,.2);border-radius:8px;padding:10px 12px;font-family:monospace;font-size:12px;line-height:2;margin-bottom:12px}.tc span{color:#4ADE80}#payment-form{background:rgba(255,255,255,.03);border:1px solid rgba(245,166,35,.18);border-radius:10px;padding:8px;min-height:130px}.aw{background:rgba(13,31,60,.7);border:1px solid rgba(245,166,35,.18);border-radius:10px;display:flex;align-items:center;padding:0 16px;gap:6px}.as{font-size:28px;color:rgba(232,223,200,.5);font-weight:700}.aw input{flex:1;background:transparent;border:none;padding:12px 0;font-size:32px;color:#E8DFC8;font-family:monospace;outline:none}.btn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,#F5A623,#E8920A);color:#0D1F3C;font-size:20px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:12px;transition:all .18s}.btn:disabled{opacity:.4;pointer-events:none}.pbg{background:rgba(13,31,60,.8);border-radius:20px;height:8px;overflow:hidden;margin:12px 0 4px;display:none}.pf{height:100%;border-radius:20px;width:0%;background:linear-gradient(90deg,#F5A623,#FFD06B);transition:width .4s}.pl{font-size:12px;color:rgba(232,223,200,.5);font-family:monospace;display:none;margin-bottom:8px}.con{background:#080F1E;border:1px solid rgba(245,166,35,.18);border-radius:12px;padding:12px;margin-top:12px;max-height:220px;overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.8;display:none}.con.show{display:block}.ll{display:flex;gap:6px}.lts{color:#4A6FA5;font-size:10px;flex-shrink:0}.ltag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;text-transform:uppercase;flex-shrink:0}.tok{background:rgba(27,138,90,.25);color:#4ADE80}.terr{background:rgba(192,57,43,.25);color:#FC8181}.tinf{background:rgba(74,111,165,.25);color:#93B4D4}.tdbg{background:rgba(139,92,246,.25);color:#C4B5FD}.twrn{background:rgba(230,126,34,.25);color:#FCA05A}.lm{flex:1;word-break:break-all}.mok{color:#4ADE80}.merr{color:#FC8181}.minf{color:rgba(232,223,200,.6)}.mdbg{color:#C4B5FD}.mwrn{color:#FCA05A}.rbox{border-radius:14px;padding:18px;margin-top:12px;display:none;justify-content:space-between;align-items:center}.rbox.show{display:flex}.rbox.ok{background:rgba(27,138,90,.12);border:1px solid rgba(27,138,90,.3)}.rbox.fail{background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.3)}.rs{font-size:24px;font-weight:700;letter-spacing:2px}.rbox.ok .rs{color:#4ADE80}.rbox.fail .rs{color:#FC8181}.rd{font-family:monospace;font-size:11px;color:rgba(232,223,200,.5);margin-top:4px;line-height:1.6}.rd strong{color:#4ADE80}.bnew{background:#F5A623;color:#0D1F3C;font-weight:700;font-size:14px;border:none;border-radius:10px;padding:10px 16px;cursor:pointer;flex-shrink:0}.dbgp{margin-top:12px;display:none}.dbgh{display:flex;justify-content:space-between;align-items:center;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);border-radius:12px 12px 0 0;padding:10px 14px;cursor:pointer}.dbgt{font-size:15px;font-weight:700;color:#C4B5FD;letter-spacing:1px}.dbgb2{font-size:9px;font-weight:700;background:rgba(139,92,246,.25);color:#C4B5FD;padding:2px 8px;border-radius:10px}.dbgtog{font-size:11px;color:rgba(232,223,200,.5)}.dbgbody{background:#060D1A;border:1px solid rgba(139,92,246,.2);border-top:none;border-radius:0 0 12px 12px}.dbgbody.closed{display:none}.dbgs{border-bottom:1px solid rgba(139,92,246,.15);padding:12px 14px}.dbgs:last-child{border-bottom:none}.dbgst{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#C4B5FD;margin-bottom:8px}.crow{display:flex;gap:8px;margin-bottom:6px;font-size:11px;line-height:1.5}.cic{flex-shrink:0}.clb{flex:1}.cv{font-family:monospace;font-size:10px;color:#C4B5FD;word-break:break-all;margin-top:2px}.pass .clb{color:#4ADE80}.fail .clb{color:#FC8181}.warn .clb{color:#FCA05A}.info .clb{color:rgba(232,223,200,.5)}.raw{background:#030810;border-radius:8px;padding:10px;font-family:monospace;font-size:10px;color:#93B4D4;line-height:1.6;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto}.cpybtn{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#C4B5FD;font-family:monospace;font-size:11px;padding:4px 10px;border-radius:8px;cursor:pointer;float:right;margin-bottom:6px}.tb{background:rgba(27,138,90,.08);border:1px solid rgba(27,138,90,.2);border-radius:8px;padding:8px;font-family:monospace;font-size:9px;color:#4ADE80;word-break:break-all;margin-top:8px;display:none}.steps{display:flex;align-items:center;gap:8px;margin-bottom:16px}.st{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}.st.a{background:#F5A623;color:#0D1F3C}.st.d{background:rgba(27,138,90,.3);color:#4ADE80;border:1px solid rgba(27,138,90,.5)}.st.o{background:rgba(255,255,255,.05);color:rgba(232,223,200,.5);border:1px solid rgba(245,166,35,.18)}.sl{font-size:11px;color:rgba(232,223,200,.5)}.sl.a{color:#E8DFC8;font-weight:600}.dv{flex:1;height:1px;background:rgba(245,166,35,.18)}.ib{background:rgba(74,111,165,.08);border:1px solid rgba(74,111,165,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:#93B4D4;line-height:1.7;margin-bottom:14px}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin .7s linear infinite;display:inline-block}::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(245,166,35,.2);border-radius:2px}</style></head>
 
-# Render provides PORT env var — must bind to it
+<body><div class="w">
+<div class="badge"><span class="dot"></span>RTN SMART</div>
+<h1>JS SDK <span>TEST</span></h1>
+<p class="sub">Tests sandbox credentials from iPhone. Clearent hosts the card form — no CORS issues.</p>
+<div class="steps" id="steps"><div class="st a" id="s1">1</div><div class="sl a" id="sl1">Enter Card</div><div class="dv"></div><div class="st o" id="s2">2</div><div class="sl" id="sl2">Token</div><div class="dv"></div><div class="st o" id="s3">3</div><div class="sl" id="sl3">Charge</div></div>
+<div class="ib"><strong style="color:#F5A623">Test Card:</strong> 4111 1111 1111 1111 &nbsp;|&nbsp; Exp: any future &nbsp;|&nbsp; CVV: 999</div>
+<div class="card"><div class="ch"><div class="ci">💳</div><div><div class="ct">Clearent Secure Card Form</div><div class="cd">Hosted by Clearent — PCI iframe</div></div></div>
+<div class="cb"><div class="field"><label>Payment Form</label><div id="payment-form"></div></div>
+<button class="btn" id="bt" onclick="getToken()"><span id="bti">🔐</span> GET TOKEN</button></div></div>
+<div class="card"><div class="ch"><div class="ci">💵</div><div><div class="ct">Charge Amount</div><div class="cd">Min $1.00 to approve</div></div></div>
+<div class="cb"><div class="field"><label>Amount (USD)</label><div class="aw"><span class="as">$</span><input type="number" id="amt" value="1.00" step="0.01" min="1.00" inputmode="decimal"/></div></div>
+<div class="tb" id="tb"></div>
+<button class="btn" id="bc" onclick="chargeToken()" disabled><span id="bci">⚡</span> CHARGE $1.00</button></div></div>
+<div class="pbg" id="pbg"><div class="pf" id="pf"></div></div><div class="pl" id="pl"></div>
+<div class="con" id="con"></div>
+<div class="rbox" id="rb"><div><div class="rs" id="rs">—</div><div class="rd" id="rd">—</div></div><button class="bnew" onclick="reset()">NEW</button></div>
+<div class="dbgp" id="dp"><div class="dbgh" onclick="toggleDbg()"><div style="display:flex;align-items:center;gap:8px"><span>🔬</span><span class="dbgt">DEBUG REPORT</span><span class="dbgb2" id="db">PENDING</span></div><span class="dbgtog" id="dt">▼ expand</span></div>
+<div class="dbgbody closed" id="dbd">
+<div class="dbgs"><div class="dbgst">① Token Response</div><div id="d1"></div></div>
+<div class="dbgs"><div class="dbgst">② Charge Request</div><div id="d2"></div></div>
+<div class="dbgs"><div class="dbgst">③ Charge Response</div><div id="d3"></div></div>
+<div class="dbgs"><div class="dbgst">④ Raw Payload</div><button class="cpybtn" onclick="copy()">⎘ Copy</button><div style="clear:both"></div><div class="raw" id="dr">—</div></div>
+</div></div>
+</div>
+<script src="https://gateway-sb.clearent.net/js-sdk/js/clearent-host.js"></script>
+<script>
+const PK='307a301406072a8648ce3d020106092b240303020801010c036200044b3b059f574e567b9a9df877536a2240415193b6e1924b85aee93c170e836cff44904ad92b3bcfce3a5a6357db241bb7384ca253130420a6048889ab272a38844dac5ff099f2ecc91e4335d8eaa4c1e46f1165707f7c782ed1f3290088da3b75';
+const AK='9e16eb7e04954bae8532d8cbdc77417b';
+const PROXY=window.location.origin;
+const GW='https://gateway-sb.clearent.net';
+let jwt=null,raw='—',dbgO=false;
+window.addEventListener('load',()=>{try{ClearentSDK.init({baseUrl:GW,pk:PK});lg('ok','SDK loaded ✅ — enter test card above');}catch(e){lg('err','SDK load failed: '+e.message);}});
+function ClearentTokenSuccess(r,j){const d=typeof j==='string'?JSON.parse(j):j;jwt=d.payload['mobile-jwt'].jwt;const l4=d.payload['mobile-jwt']['last-four'];lg('ok','✅ Token! Last4: '+l4);dR('d1','✅','Token','OK','pass');dR('d1','💳','Last4',l4,'pass');dR('d1','🔑','JWT',jwt.substr(0,60)+'...','info');document.getElementById('tb').style.display='block';document.getElementById('tb').textContent='JWT: '+jwt.substr(0,80)+'...';document.getElementById('bc').disabled=false;document.getElementById('bc').innerHTML='<span>⚡</span> CHARGE $'+parseFloat(document.getElementById('amt').value).toFixed(2);document.getElementById('bti').textContent='✅';document.getElementById('bt').disabled=false;setP(50,'Token received — tap CHARGE!');setSt(2);setBdg('TOKEN OK',true);showD();lg('ok','Tap CHARGE to complete!');}
+function ClearentTokenError(r,j){const d=typeof j==='string'?JSON.parse(j):j;const m=d.message||JSON.stringify(d);lg('err','Token err: '+m);dR('d1','❌','Error',m,'fail');document.getElementById('bti').textContent='🔐';document.getElementById('bt').disabled=false;hideP();setBdg('FAIL',false);showD();openD();}
+function getToken(){document.getElementById('bt').disabled=true;document.getElementById('bti').className='spin';document.getElementById('bti').textContent='⟳';showC();showP();showD();clearD();setP(20,'Getting token...');lg('info','Requesting JWT from SDK...');ClearentSDK.getPaymentToken();}
+async function chargeToken(){if(!jwt){lg('err','No token');return;}const amt=parseFloat(document.getElementById('amt').value).toFixed(2);document.getElementById('bc').disabled=true;document.getElementById('bci').className='spin';document.getElementById('bci').textContent='⟳';setP(60,'Charging...');lg('info','POST mobile/transactions/sale $'+amt);const body={type:'SALE',amount:amt,'software-type':'RTN-SMART','software-type-version':'2.0'};dR('d2','📤','Method','POST','info');dR('d2','🌐','Endpoint',PROXY+'/rest/v2/mobile/transactions/sale','info');dR('d2','💰','Amount','$'+amt,'info');dR('d2','🔑','JWT',jwt.substr(0,50)+'...','info');dR('d2','📦','Body',JSON.stringify(body),'info');lg('dbg','Body: '+JSON.stringify(body));const t0=Date.now();try{const resp=await fetch(PROXY+'/rest/v2/mobile/transactions/sale',{method:'POST',headers:{'api-key':AK,'mobilejwt':jwt,'Content-Type':'application/json','X-Target-Gateway':GW},body:JSON.stringify(body)});const ms=Date.now()-t0;const txt=await resp.text();raw=txt;document.getElementById('dr').textContent=txt;lg('info','HTTP '+resp.status+' '+ms+'ms');dR('d3','🌐','HTTP',resp.status+' ('+ms+'ms)',resp.ok?'pass':'fail');let data;try{data=JSON.parse(txt);}catch(e){data=null;}if(data){const txn=data.payload&&data.payload.transaction;const code=txn?txn['result-code']:(data.code||'???');const msg=txn?txn['display-message']:(data.status||'?');const ok=code==='000';dR('d3','🔢','Code',code,ok?'pass':'fail');dR('d3','💬','Msg',msg,ok?'pass':'warn');if(ok&&txn){dR('d3','🔐','Auth',txn['authorization-code']||'—','pass');dR('d3','💳','Card',txn['card-type']+' ···· '+txn['last-four'],'pass');lg('ok','✅ APPROVED! Auth: '+(txn['authorization-code']||'—'));lg('ok','Card: '+txn['card-type']+' ···· '+txn['last-four']);setP(100,'✅ APPROVED!');setBdg('✅ APPROVED',true);setSt(3);const rb=document.getElementById('rb');rb.className='rbox show ok';document.getElementById('rs').textContent='✅ APPROVED';document.getElementById('rd').innerHTML='$'+amt+' charged!<br><strong>Auth: '+(txn['authorization-code']||'—')+'</strong> · '+txn['card-type']+' ···· '+txn['last-four'];}else{lg('err','Code '+code+' — '+msg);setP(100,'❌ Code '+code);setBdg('❌ '+code,false);const rb=document.getElementById('rb');rb.className='rbox show fail';document.getElementById('rs').textContent='✗ CODE '+code;document.getElementById('rd').innerHTML=msg;openD();}}else{lg('err','Bad JSON');setBdg('❌ JSON',false);openD();}}catch(e){const ms=Date.now()-t0;lg('err','Error '+ms+'ms: '+e.message);raw='Error: '+e.message;document.getElementById('dr').textContent=raw;dR('d3','❌','Error',e.message,'fail');setP(100,'❌ Error');setBdg('❌ ERR',false);const rb=document.getElementById('rb');rb.className='rbox show fail';document.getElementById('rs').textContent='✗ ERROR';document.getElementById('rd').innerHTML=e.message;openD();}document.getElementById('bc').disabled=false;document.getElementById('bci').className='';document.getElementById('bci').textContent='⚡';}
+function setSt(n){for(let i=1;i<=3;i++){const s=document.getElementById('s'+i);const l=document.getElementById('sl'+i);if(i<n){s.className='st d';s.textContent='✓';l.className='sl';}else if(i===n){s.className='st a';l.className='sl a';}else{s.className='st o';l.className='sl';}}}
+function setP(p,t){document.getElementById('pbg').style.display='block';document.getElementById('pl').style.display='block';document.getElementById('pf').style.width=p+'%';document.getElementById('pl').textContent=t;}
+function showP(){document.getElementById('pbg').style.display='block';document.getElementById('pl').style.display='block';}
+function hideP(){document.getElementById('pbg').style.display='none';document.getElementById('pl').style.display='none';}
+function showC(){document.getElementById('con').classList.add('show');}
+function showD(){document.getElementById('dp').style.display='block';}
+function lg(type,msg){const c=document.getElementById('con');const ts=new Date().toLocaleTimeString('en-US',{hour12:false});const tags={ok:'OK',err:'ERR',warn:'WARN',info:'INFO',dbg:'DBG'};const d=document.createElement('div');d.className='ll';d.innerHTML='<span class="lts">'+ts+'</span><span class="ltag t'+type+'">'+(tags[type]||type)+'</span><span class="lm m'+type+'">'+msg+'</span>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function dR(sec,ico,label,val,status){const el=document.getElementById(sec);const d=document.createElement('div');d.className='crow '+status;d.innerHTML='<span class="cic">'+ico+'</span><div style="flex:1"><span class="clb">'+label+'</span>'+(val?'<div class="cv">'+val+'</div>':'')+'</div>';el.appendChild(d);}
+function setBdg(t,ok){const b=document.getElementById('db');b.textContent=t;if(ok===true){b.style.background='rgba(27,138,90,.25)';b.style.color='#4ADE80';}if(ok===false){b.style.background='rgba(192,57,43,.25)';b.style.color='#FC8181';}}
+function clearD(){['d1','d2','d3'].forEach(id=>document.getElementById(id).innerHTML='');document.getElementById('dr').textContent='—';raw='—';}
+function toggleDbg(){dbgO=!dbgO;document.getElementById('dbd').classList.toggle('closed',!dbgO);document.getElementById('dt').textContent=dbgO?'▲ collapse':'▼ expand';}
+function openD(){dbgO=true;document.getElementById('dbd').classList.remove('closed');document.getElementById('dt').textContent='▲ collapse';}
+function copy(){navigator.clipboard?.writeText(raw).then(()=>{const b=document.querySelector('.cpybtn');b.textContent='✓';setTimeout(()=>b.textContent='⎘ Copy',2000);});}
+function reset(){jwt=null;document.getElementById('tb').style.display='none';document.getElementById('bc').disabled=true;document.getElementById('bti').textContent='🔐';document.getElementById('rb').className='rbox';document.getElementById('con').innerHTML='';document.getElementById('con').classList.remove('show');hideP();document.getElementById('pf').style.width='0%';document.getElementById('dp').style.display='none';setSt(1);clearD();}
+</script></body></html>"""
 
-PORT = int(os.environ.get('PORT', 5050))
+class H(http.server.BaseHTTPRequestHandler):
+def log_message(self,f,*a):pass
+def do_OPTIONS(self):
+self.send_response(200)
+[self.send_header(k,v) for k,v in C.items()]
+self.end_headers()
+def do_GET(self):
+if self.path in (’/’,’/test’,’/health’):
+if self.path==’/health’:
+b=json.dumps({‘status’:‘ok’,‘service’:‘RTN SMART Proxy’}).encode();ct=‘application/json’
+else:
+b=HTML;ct=‘text/html’
+self.send_response(200);self.send_header(‘Content-Type’,ct);self.send_header(‘Content-Length’,str(len(b)));[self.send_header(k,v) for k,v in C.items()];self.end_headers();self.wfile.write(b)
+else:self._p(‘GET’)
+def do_POST(self):self._p(‘POST’)
+def do_PUT(self):self._p(‘PUT’)
+def do_DELETE(self):self._p(‘DELETE’)
+def _p(self,m):
+gw=(self.headers.get(‘X-Target-Gateway’) or DEFAULT).rstrip(’/’)
+if gw not in A:self._e(403,‘not allowed’);return
+t=gw+self.path;cl=int(self.headers.get(‘Content-Length’,0));bd=self.rfile.read(cl) if cl>0 else None
+fh={k:v for k,v in self.headers.items() if k.lower() in P}
+try:
+r=urllib.request.urlopen(urllib.request.Request(t,bd,fh,method=m),timeout=60)
+rb=r.read();self.send_response(r.status);[self.send_header(k,v) for k,v in C.items()];[self.send_header(k,v) for k,v in dict(r.headers).items() if k.lower() not in S];self.send_header(‘Content-Length’,str(len(rb)));self.end_headers();self.wfile.write(rb)
+except urllib.error.HTTPError as e:
+rb=e.read();self.send_response(e.code);[self.send_header(k,v) for k,v in C.items()];self.send_header(‘Content-Length’,str(len(rb)));self.end_headers();self.wfile.write(rb)
+except Exception as e:self._e(502,str(e))
+def _e(self,s,m):
+b=json.dumps({‘error’:m}).encode();self.send_response(s);[self.send_header(k,v) for k,v in C.items()];self.send_header(‘Content-Type’,‘application/json’);self.send_header(‘Content-Length’,str(len(b)));self.end_headers();self.wfile.write(b)
 
-ALLOWED_GATEWAYS = {
-    'https://gateway-sb.clearent.net',
-    'https://gateway-int.clearent.net',
-    'https://gateway.clearent.net',
-}
-
-DEFAULT_GATEWAY = 'https://gateway-sb.clearent.net'
-
-CORs_HEADERS = {
-    'Access-Control-Allow-Origin':  '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, AccessKey, MerchantId, X-Target-Gateway, Authorization',
-    'Access-Control-Max-Age':       '86400',
-}
-
-PASSTHROUGH_HEADERS = {'accesskey', 'merchantid', 'content-type', 'authorization'}
-STRIP_RESPONSE      = {'transfer-encoding', 'connection', 'keep-alive'}
-
-def ts():
-    return datetime.now().strftime('%H:%M:%S.%f')[:-3]
-
-def log(tag, msg):
-    print(f'[{ts()}] {tag:6} {msg}', flush=True)
-
-class RTNProxyHandler(http.server.BaseHTTPRequestHandler):
-    def log_message(self, fmt, *args):
-        pass  # suppress default logs
-
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self._cors()
-        self.end_headers()
-
-    def do_GET(self):    self._proxy('GET')
-    def do_POST(self):   self._proxy('POST')
-    def do_PUT(self):    self._proxy('PUT')
-    def do_DELETE(self): self._proxy('DELETE')
-    def do_PATCH(self):  self._proxy('PATCH')
-
-    def _proxy(self, method):
-        t0 = time.time()
-
-        # Health check endpoint
-        if self.path == '/health':
-            body = json.dumps({'status': 'ok', 'service': 'RTN SMART CORS Proxy'}).encode()
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', str(len(body)))
-            self._cors()
-            self.end_headers()
-            self.wfile.write(body)
-            return
-
-        # Determine gateway
-        gateway = self.headers.get('X-Target-Gateway', DEFAULT_GATEWAY).strip().rstrip('/')
-        if gateway not in ALLOWED_GATEWAYS:
-            log('BLOCK', f'Gateway not allowed: {gateway}')
-            self._error(403, f'Gateway not allowed: {gateway}')
-            return
-
-        target_url = gateway + self.path
-        log('REQ', f'{method} {target_url}')
-
-        # Read body
-        body_bytes = b''
-        cl = int(self.headers.get('Content-Length', 0))
-        if cl > 0:
-            body_bytes = self.rfile.read(cl)
-
-        # Forward headers
-        fwd = {}
-        for k, v in self.headers.items():
-            if k.lower() in PASSTHROUGH_HEADERS:
-                fwd[k] = v
-
-        # Make request
-        try:
-            req = urllib.request.Request(
-                url=target_url, data=body_bytes or None,
-                headers=fwd, method=method
-            )
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                elapsed = round((time.time() - t0) * 1000)
-                status   = resp.status
-                rbody    = resp.read()
-                rheaders = dict(resp.headers)
-                log('RES', f'HTTP {status} · {elapsed}ms · {len(rbody)}B')
-
-        except urllib.error.HTTPError as e:
-            elapsed = round((time.time() - t0) * 1000)
-            status   = e.code
-            rbody    = b''
-            try: rbody = e.read()
-            except: pass
-            rheaders = dict(e.headers) if e.headers else {}
-            log('ERR', f'HTTP {status} from gateway · {elapsed}ms')
-
-        except urllib.error.URLError as e:
-            log('ERR', f'Cannot reach gateway: {e.reason}')
-            self._error(502, f'Cannot reach gateway: {e.reason}')
-            return
-
-        except Exception as e:
-            log('ERR', f'Unexpected: {e}')
-            self._error(500, str(e))
-            return
-
-        # Send response
-        self.send_response(status)
-        self._cors()
-        for k, v in rheaders.items():
-            if k.lower() not in STRIP_RESPONSE and k.lower() != 'access-control-allow-origin':
-                try: self.send_header(k, v)
-                except: pass
-        self.send_header('Content-Length', str(len(rbody)))
-        self.end_headers()
-        self.wfile.write(rbody)
-
-    def _cors(self):
-        for k, v in CORs_HEADERS.items():
-            self.send_header(k, v)
-
-    def _error(self, status, msg):
-        body = json.dumps({'proxy-error': msg}).encode()
-        self.send_response(status)
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Content-Length', str(len(body)))
-        self._cors()
-        self.end_headers()
-        self.wfile.write(body)
-
-if __name__ == '__main__':
-    print(f'', flush=True)
-    print(f'╔══════════════════════════════════════════╗', flush=True)
-    print(f'║  RTN SMART CORS Proxy — Render Edition   ║', flush=True)
-    print(f'╚══════════════════════════════════════════╝', flush=True)
-    print(f'  Listening on port {PORT}', flush=True)
-    print(f'  Health check: /health', flush=True)
-    print(f'', flush=True)
-
-    server = http.server.ThreadingHTTPServer(('0.0.0.0', PORT), RTNProxyHandler)
-    server.daemon_threads = True
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print('\nStopped.', flush=True)
-        sys.exit(0)
+print(f’RTN SMART Proxy v2 on port {PORT}’,flush=True)
+s=http.server.ThreadingHTTPServer((‘0.0.0.0’,PORT),H);s.daemon_threads=True;s.serve_forever()
